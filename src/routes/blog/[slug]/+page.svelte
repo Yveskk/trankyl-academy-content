@@ -1,6 +1,7 @@
 <script lang="ts">
   import Clock from "@lucide/svelte/icons/clock";
   import ArrowLeft from "@lucide/svelte/icons/arrow-left";
+  import { i18n } from "$lib/stores/locale.svelte";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
@@ -18,7 +19,7 @@
 <div class="public-page article-page">
   <a class="back-link" href="/blog">
     <ArrowLeft size={15} />
-    Tous les articles
+    {i18n.dict.blog.tousLesArticles}
   </a>
 
   <div class="article-header">
@@ -32,7 +33,7 @@
   </div>
 
   <div class="article-layout section">
-    <aside class="article-aside">Lecture<br /><strong>{article.readTime}</strong></aside>
+    <aside class="article-aside">{i18n.dict.blog.lecture}<br /><strong>{article.readTime}</strong></aside>
     <div class="article-body">
       {#each article.content as paragraph, index}
         <p class:first-paragraph={index === 0}>{paragraph}</p>

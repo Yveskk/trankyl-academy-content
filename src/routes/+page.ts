@@ -1,5 +1,6 @@
+import { getSection } from "$lib/api/content";
 import { listMetiers } from "$lib/api/taxonomy";
-import type { Metier } from "$lib/api/types";
+import type { ContentSection, Metier } from "$lib/api/types";
 import type { PageLoad } from "./$types";
 
 export const load: PageLoad = async () => {
@@ -12,5 +13,14 @@ export const load: PageLoad = async () => {
     apiError = "Impossible de contacter le serveur Trankyl Academy. Verifiez que l'API est demarree.";
   }
 
-  return { metiers, apiError };
+  // Section editoriale geree depuis l'admin : absente ou desactivee -> on
+  // masque simplement le bloc, ce n'est jamais une erreur bloquante.
+  let section: ContentSection | null = null;
+  try {
+    section = await getSection("home_careers");
+  } catch {
+    section = null;
+  }
+
+  return { metiers, apiError, section };
 };

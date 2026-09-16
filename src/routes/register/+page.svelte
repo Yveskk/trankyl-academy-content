@@ -3,6 +3,7 @@
   import { goto } from "$app/navigation";
   import { login, register } from "$lib/api/auth";
   import { auth } from "$lib/stores/auth.svelte";
+  import { i18n } from "$lib/stores/locale.svelte";
 
   let firstname = $state("");
   let lastname = $state("");
@@ -31,32 +32,32 @@
 
 <div class="card auth-card">
   <span class="icon-badge gold"><UserPlus size={22} /></span>
-  <h1 style="margin-top:1rem">Inscription</h1>
-  <p class="muted">Creez votre compte apprenant Trankyl Academy.</p>
+  <h1 style="margin-top:1rem">{i18n.dict.register.title}</h1>
+  <p class="muted">{i18n.dict.register.subtitle}</p>
 
   <form onsubmit={handleSubmit}>
     <div class="field">
-      <label for="firstname">Prenom</label>
+      <label for="firstname">{i18n.dict.register.firstname}</label>
       <input id="firstname" bind:value={firstname} required />
     </div>
     <div class="field">
-      <label for="lastname">Nom</label>
+      <label for="lastname">{i18n.dict.register.lastname}</label>
       <input id="lastname" bind:value={lastname} required />
     </div>
     <div class="field">
-      <label for="email">Email</label>
+      <label for="email">{i18n.dict.register.email}</label>
       <input id="email" type="email" bind:value={email} required />
     </div>
     <div class="field">
-      <label for="phone">Telephone (optionnel)</label>
+      <label for="phone">{i18n.dict.register.phone}</label>
       <input id="phone" bind:value={phone} />
     </div>
     <div class="field">
-      <label for="password">Mot de passe</label>
+      <label for="password">{i18n.dict.register.password}</label>
       <input id="password" type="password" bind:value={password} required />
     </div>
     <button class="btn btn-primary" type="submit" disabled={loading}>
-      {loading ? "Creation..." : "Creer mon compte"}
+      {loading ? i18n.dict.register.submitLoading : i18n.dict.register.submit}
     </button>
   </form>
 

@@ -2,6 +2,7 @@
   import Clock from "@lucide/svelte/icons/clock";
   import BookOpen from "@lucide/svelte/icons/book-open";
   import { articles } from "$lib/content/blog";
+  import { i18n } from "$lib/stores/locale.svelte";
 
   function formatDate(iso: string) {
     return new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
@@ -15,10 +16,10 @@
 <div class="public-page blog-index">
   <div class="editorial-hero">
     <div>
-      <span class="eyebrow">Le journal Academy</span>
-      <h1>Conseils, coulisses et bonnes pratiques.</h1>
+      <span class="eyebrow">{i18n.dict.blog.eyebrow}</span>
+      <h1>{i18n.dict.blog.title}</h1>
     </div>
-    <p>Des idées utiles pour apprendre un métier, progresser avec confiance et comprendre comment Trankyl Academy fonctionne.</p>
+    <p>{i18n.dict.blog.intro}</p>
   </div>
 
   <div class="grid-cards section editorial-grid">

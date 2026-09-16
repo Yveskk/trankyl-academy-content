@@ -1,5 +1,5 @@
 <script lang="ts">
-  import GraduationCap from "@lucide/svelte/icons/graduation-cap";
+  import { i18n } from "$lib/stores/locale.svelte";
 
   const year = new Date().getFullYear();
 </script>
@@ -9,12 +9,11 @@
     <div class="footer-grid">
       <div>
         <div class="footer-brand">
-          <GraduationCap size={22} color="var(--gold)" />
+          <img src="/logo-wh.svg" alt="Trankyl" />
           Trankyl Academy
         </div>
         <p style="color: rgba(255,255,255,.6); font-size: .88rem; max-width: 280px;">
-          La formation qui prepare aux metiers de services a domicile, avec des micro-certifications
-          reconnues par Trankyl.
+          {i18n.dict.footer.tagline}
         </p>
         <div class="social-icons">
           <a href="https://www.facebook.com" target="_blank" rel="noreferrer" aria-label="Facebook">
@@ -42,37 +41,36 @@
       </div>
 
       <div>
-        <h4>Apprenants</h4>
+        <h4>{i18n.dict.footer.apprenantsHeading}</h4>
         <ul>
-          <li><a href="/">Tous les metiers</a></li>
-          <li><a href="/register">Creer un compte</a></li>
-          <li><a href="/login">Connexion</a></li>
-          <li><a href="/dashboard">Mon espace</a></li>
+          <li><a href="/">{i18n.dict.footer.tousLesMetiers}</a></li>
+          <li><a href="/register">{i18n.dict.footer.creerUnCompte}</a></li>
+          <li><a href="/login">{i18n.dict.footer.connexion}</a></li>
+          <li><a href="/dashboard">{i18n.dict.footer.monEspace}</a></li>
         </ul>
       </div>
 
       <div>
-        <h4>Ressources</h4>
+        <h4>{i18n.dict.footer.ressourcesHeading}</h4>
         <ul>
-          <li><a href="/blog">Blog</a></li>
-          <li><a href="/faq">FAQ</a></li>
-          <li><a href="/a-propos">A propos</a></li>
-          <li><a href="/contact">Contact</a></li>
+          <li><a href="/blog">{i18n.dict.footer.blog}</a></li>
+          <li><a href="/a-propos">{i18n.dict.footer.aPropos}</a></li>
+          <li><a href="/contact">{i18n.dict.footer.contact}</a></li>
         </ul>
       </div>
 
       <div>
-        <h4>Trankyl</h4>
+        <h4>{i18n.dict.footer.trankylHeading}</h4>
         <ul>
-          <li><a href="https://trankyl.com" target="_blank" rel="noreferrer">Trankyl.com</a></li>
-          <li><a href="/admin/login">Espace admin</a></li>
+          <li><a href="https://trankyl.com" target="_blank" rel="noreferrer">{i18n.dict.footer.trankylSite}</a></li>
+          <li><a href="/admin/login">{i18n.dict.footer.espaceAdmin}</a></li>
         </ul>
       </div>
     </div>
 
     <div class="footer-bottom">
-      <span>&copy; {year} Trankyl Academy. Tous droits reserves.</span>
-      <span>Taxonomie &amp; curriculum sous licence CC-BY-4.0 &mdash; code du site sous MIT</span>
+      <span>{i18n.dict.footer.copyright(year)}</span>
+      <span>{i18n.dict.footer.license}</span>
     </div>
   </div>
 </footer>

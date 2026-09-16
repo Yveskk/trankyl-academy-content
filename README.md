@@ -16,18 +16,10 @@ d'articles cote admin pour l'instant.
 Toutes les donnees viennent de l'API `trankyl-academy-engine` (FastAPI). Ce site n'a pas sa propre base de
 donnees.
 
-## Mode demo (sans backend)
-
-Pour montrer le design sans lancer `trankyl-academy-engine`, mettre `PUBLIC_USE_MOCK_DATA=true` dans `.env` :
-le site sert alors des donnees statiques (4 metiers, taxonomie complete, quiz, un apprenant avec une
-certification deja obtenue) definies dans `src/lib/mock/data.ts`. Les fichiers `src/lib/api/*.ts` basculent
-automatiquement dessus — aucune page ne change de comportement selon la source des donnees. Remettre
-`PUBLIC_USE_MOCK_DATA=false` (defaut) pour reparler a la vraie API.
-
 ## Prerequis
 
 - Node.js 20+
-- `trankyl-academy-engine` lance en local (ou son URL de prod) pour l'API — sauf en mode demo ci-dessus
+- `trankyl-academy-engine` lance en local (ou son URL de prod) pour l'API
 
 ## Installation
 

@@ -95,9 +95,10 @@
     {:else}
       <ul class="stack">
         {#each certifications as c}
-          <li class="card row">
+          <li class="card row" style="cursor:pointer" onclick={() => goto(`/dashboard/certificat/${c.id}`)}>
             <span class="badge badge-gold"><Award size={11} />{c.code}</span>
             <span class="muted">obtenue le {new Date(c.delivree_at).toLocaleDateString("fr-FR")}</span>
+            <span class="muted" style="margin-left:auto;font-size:0.78rem;color:#03a71a">Voir le certificat →</span>
           </li>
         {/each}
       </ul>

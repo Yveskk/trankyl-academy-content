@@ -1,30 +1,26 @@
 import { ApiError } from "$lib/api/client";
-import { listModules } from "$lib/api/curriculum";
 import { getMetier } from "$lib/api/taxonomy";
-import type { MetierDetail, ModuleItem } from "$lib/api/types";
+import type { MetierDetail } from "$lib/api/types";
+import { i18n } from "$lib/stores/locale.svelte";
 import type { PageLoad } from "./$types";
 
 export const load: PageLoad = async ({ params }) => {
   let metier: MetierDetail | null = null;
-  let modulesByCompetence = new Map<number, ModuleItem[]>();
   let apiError: string | null = null;
 
   try {
+    // Un seul appel : le backend renvoie desormais niveaux -> competences ->
+    // modules -> quiz en une seule requete (voir _METIER_DETAIL_LOADER cote
+    // API), plus besoin d'un aller-retour par competence ici.
     metier = await getMetier(params.code);
-    const competenceIds = metier.niveaux.flatMap((n) => n.competences.map((c) => c.id));
-    await Promise.all(
-      competenceIds.map(async (id) => {
-        modulesByCompetence.set(id, await listModules(id));
-      })
-    );
   } catch (e) {
     apiError =
       e instanceof ApiError
         ? e.status === 404
-          ? "Metier introuvable."
+          ? i18n.dict.metierDetail.metierIntrouvable
           : e.message
-        : "Impossible de contacter le serveur Trankyl Academy. Verifiez que l'API est demarree.";
+        : i18n.dict.metierDetail.erreurServeur;
   }
 
-  return { metier, modulesByCompetence, apiError };
+  return { metier, apiError };
 };
