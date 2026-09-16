@@ -1,1 +1,64 @@
 # trankyl-academy-content
+
+Site web (SvelteKit) de Trankyl Academy — taxonomie et curriculum sous licence CC-BY-4.0, code du site sous MIT.
+
+Ce site sert deux publics :
+
+- **Public / apprenants** : parcourir les metiers, s'inscrire a un module, passer le quiz de fin de module,
+  suivre sa progression et ses certifications (`/`, `/metiers/[code]`, `/modules/[id]`, `/login`, `/register`,
+  `/dashboard`), lire le blog (`/blog`), consulter la FAQ (`/faq`), en savoir plus (`/a-propos`, `/contact`)
+- **Admins** : gerer la taxonomie (metiers/niveaux/competences) et le curriculum (modules/quiz) — tout se fait
+  ici, cote site, pas de saisie directe en base (`/admin/taxonomy`, `/admin/curriculum`)
+
+Le contenu du blog et de la FAQ est statique (`src/lib/content/`), independant du backend — pas de gestion
+d'articles cote admin pour l'instant.
+
+Toutes les donnees viennent de l'API `trankyl-academy-engine` (FastAPI). Ce site n'a pas sa propre base de
+donnees.
+
+## Mode demo (sans backend)
+
+Pour montrer le design sans lancer `trankyl-academy-engine`, mettre `PUBLIC_USE_MOCK_DATA=true` dans `.env` :
+le site sert alors des donnees statiques (4 metiers, taxonomie complete, quiz, un apprenant avec une
+certification deja obtenue) definies dans `src/lib/mock/data.ts`. Les fichiers `src/lib/api/*.ts` basculent
+automatiquement dessus — aucune page ne change de comportement selon la source des donnees. Remettre
+`PUBLIC_USE_MOCK_DATA=false` (defaut) pour reparler a la vraie API.
+
+## Prerequis
+
+- Node.js 20+
+- `trankyl-academy-engine` lance en local (ou son URL de prod) pour l'API — sauf en mode demo ci-dessus
+
+## Installation
+
+```bash
+npm install
+cp .env.example .env   # PUBLIC_API_URL doit pointer vers l'API FastAPI
+```
+
+## Developpement
+
+```bash
+npm run dev
+```
+
+## Creer le premier compte admin
+
+Aucune inscription admin depuis le site (par design) : voir `python -m scripts.create_admin` dans
+`trankyl-academy-engine`.
+
+## Build
+
+```bash
+npm run build
+npm run preview
+```
+
+Utilise `@sveltejs/adapter-node` (coherent avec le deploiement EC2 + PM2 du reste de Trankyl). Le build produit
+un serveur Node autonome dans `build/` :
+
+```bash
+node build/index.js   # ou via PM2, comme trankyl_backend_nodejs
+```
+
+Variables lues au demarrage du serveur buildé : `PORT` (defaut 3000), `ORIGIN` (URL publique du site).
