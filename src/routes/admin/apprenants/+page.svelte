@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { listApprenants } from "$lib/api/matching";
   import type { ApprenantDetail } from "$lib/api/types";
   import Award from "@lucide/svelte/icons/award";
@@ -10,7 +11,7 @@
   let loading = $state(true);
   let error = $state<string | null>(null);
 
-  $effect(() => {
+  onMount(() => {
     listApprenants()
       .then((data) => (apprenants = data))
       .catch((e) => (error = (e as Error).message))

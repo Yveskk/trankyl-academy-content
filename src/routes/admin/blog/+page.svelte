@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { adminGetArticle, adminListArticles, createArticle, deleteArticle, updateArticle, uploadCoverImage } from "$lib/api/blog";
   import type { BlogArticle } from "$lib/api/types";
   import { snackbar } from "$lib/stores/snackbar.svelte";
@@ -71,7 +72,7 @@
     }
   }
 
-  $effect(() => {
+  onMount(() => {
     refresh();
   });
 

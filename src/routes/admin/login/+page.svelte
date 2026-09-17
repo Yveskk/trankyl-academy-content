@@ -51,7 +51,7 @@
     <form onsubmit={handleSubmit}>
       <div class="field">
         <label for="email">Adresse email</label>
-        <input id="email" type="email" placeholder="admin@trankyl.com" bind:value={email} required />
+        <input id="email" type="email" placeholder="email" bind:value={email} required />
       </div>
       <div class="field">
         <label for="password">Mot de passe</label>

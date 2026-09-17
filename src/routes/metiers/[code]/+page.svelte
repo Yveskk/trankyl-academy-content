@@ -4,6 +4,7 @@
   import Calendar from "@lucide/svelte/icons/calendar";
   import CircleCheck from "@lucide/svelte/icons/circle-check";
   import Layers from "@lucide/svelte/icons/layers";
+  import { onMount } from "svelte";
   import { goto } from "$app/navigation";
   import { enrollNiveau, myNiveauEnrollments } from "$lib/api/enrollments";
   import type { MetierDetail, NiveauEnrollment } from "$lib/api/types";
@@ -18,7 +19,7 @@
   let niveauEnrollments = $state<NiveauEnrollment[]>([]);
   let enrollingId = $state<number | null>(null);
 
-  $effect(() => {
+  onMount(() => {
     if (auth.role === "apprenant") {
       myNiveauEnrollments().then((list) => (niveauEnrollments = list));
     }

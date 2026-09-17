@@ -199,7 +199,6 @@
       <a href="/" class:active={isActive("/", true)} onclick={closeMobileMenu}><ExternalLink size={16} /> Voir le site public</a>
       <button type="button" onclick={logout}>Deconnexion</button>
     {:else}
-      <div class="mobile-menu-heading">{i18n.dict.nav.navigation}</div>
       <a href="/" class:active={isActive("/", true)} onclick={closeMobileMenu}>{i18n.dict.nav.metiers}</a>
       <a href="/prestataires" class:active={isActive("/prestataires")} onclick={closeMobileMenu}>{i18n.dict.nav.prestataires}</a>
       <a href="/blog" class:active={isActive("/blog")} onclick={closeMobileMenu}>{i18n.dict.nav.blog}</a>

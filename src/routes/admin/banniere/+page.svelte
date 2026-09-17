@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { adminListBanners, createBanner, deleteBanner, updateBanner, uploadBannerImage } from "$lib/api/banners";
   import type { Banner } from "$lib/api/types";
   import { snackbar } from "$lib/stores/snackbar.svelte";
@@ -24,7 +25,7 @@
     }
   }
 
-  $effect(() => {
+  onMount(() => {
     refresh();
   });
 

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { adminListNiveauEnrollments } from "$lib/api/enrollments";
   import type { NiveauEnrollmentAdmin } from "$lib/api/types";
   import Calendar from "@lucide/svelte/icons/calendar";
@@ -8,7 +9,7 @@
   let loading = $state(true);
   let error = $state<string | null>(null);
 
-  $effect(() => {
+  onMount(() => {
     adminListNiveauEnrollments()
       .then((data) => (enrollments = data))
       .catch((e) => (error = (e as Error).message))

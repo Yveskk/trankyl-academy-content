@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { goto } from "$app/navigation";
   import { adminListMetiers, createMetier, deleteMetier, updateMetier } from "$lib/api/taxonomy";
   import type { Metier } from "$lib/api/types";
@@ -42,7 +43,7 @@
     }
   }
 
-  $effect(() => {
+  onMount(() => {
     refresh();
   });
 

@@ -4,6 +4,7 @@
   import CircleCheck from "@lucide/svelte/icons/circle-check";
   import Layers from "@lucide/svelte/icons/layers";
   import Calendar from "@lucide/svelte/icons/calendar";
+  import { onMount } from "svelte";
   import { goto } from "$app/navigation";
   import { me } from "$lib/api/auth";
   import { myCertifications } from "$lib/api/certifications";
@@ -23,8 +24,10 @@
   $effect(() => {
     if (auth.role !== "apprenant") {
       goto("/login");
-      return;
     }
+  });
+
+  onMount(() => {
     Promise.all([me(), myEnrollments(), myNiveauEnrollments(), myCertifications()])
       .then(([p, e, n, c]) => {
         profile = p;

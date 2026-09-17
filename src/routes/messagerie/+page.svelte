@@ -29,12 +29,11 @@
   $effect(() => {
     if (auth.role !== "apprenant") {
       goto("/login");
-      return;
     }
-    loadAll();
   });
 
   onMount(async () => {
+    loadAll();
     try {
       const profile = await me();
       currentUserId = profile.id;

@@ -22,8 +22,10 @@
   $effect(() => {
     if (auth.role !== "client") {
       goto("/client/login");
-      return;
     }
+  });
+
+  onMount(() => {
     loadRequests();
   });
 

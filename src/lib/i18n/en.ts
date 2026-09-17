@@ -13,7 +13,6 @@ export const en: Dictionary = {
     deconnexion: "Log out",
     ouvrirMenu: "Open menu",
     fermerMenu: "Close menu",
-    navigation: "Navigation",
   },
   footer: {
     tagline:
@@ -126,7 +125,7 @@ export const en: Dictionary = {
       "\"A good nanny is someone who...\" — this kind of knowledge often stays informal, passed on by word of mouth, hard to verify. We turn it into a written skills taxonomy, organized by level, and a concrete curriculum of short micro-modules (2 to 3h) with assessment.",
     linkTitle: "Our link with Trankyl",
     linkText:
-      "Trankyl Academy is an independent platform: its own backend, its own site, its own database. Learners are not (yet) Trankyl providers. Activation as a provider, once certified, is a future step, managed separately.",
+      "Trankyl Academy is an independent platform: its own backend, its own site, its own database. As soon as a learner validates a level, they become a Trankyl provider and can be matched with clients on the marketplace — certification activates the work directly, it isn't a separate future step.",
     principlesEyebrow: "Our principles",
     principlesTitle: "Training designed to be followed through to the end",
     credit1Title: "Stackable credits",

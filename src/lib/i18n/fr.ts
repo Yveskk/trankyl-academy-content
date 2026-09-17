@@ -13,7 +13,6 @@ export const fr = {
     deconnexion: "Déconnexion",
     ouvrirMenu: "Ouvrir le menu",
     fermerMenu: "Fermer le menu",
-    navigation: "Navigation",
   },
   footer: {
     tagline:
@@ -128,7 +127,7 @@ export const fr = {
       "« Une bonne nounou, c'est quelqu'un qui... » — ce genre de savoir reste souvent informel, transmis oralement, difficile à vérifier. Nous le transformons en taxonomie de compétences écrite, hiérarchisée par niveau, et en curriculum concret de micro-modules courts (2 à 3h) avec évaluation.",
     linkTitle: "Notre lien avec Trankyl",
     linkText:
-      "Trankyl Academy est une plateforme indépendante : son propre backend, son propre site, sa propre base de données. Les apprenants ne sont pas (encore) des prestataires Trankyl. L'activation en tant que prestataire, une fois certifié, est une étape à venir, gérée séparément.",
+      "Trankyl Academy est une plateforme indépendante : son propre backend, son propre site, sa propre base de données. Dès qu'un apprenant valide un niveau, il devient prestataire Trankyl et peut être mis en relation avec des clients sur la marketplace — la certification active directement l'activité, elle n'est pas une étape séparée.",
     principlesEyebrow: "Nos principes",
     principlesTitle: "Une formation pensée pour être suivie jusqu'au bout",
     credit1Title: "Des crédits empilables",

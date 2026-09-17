@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { createModule, createQuiz, deleteModule, listModules, updateModule } from "$lib/api/curriculum";
   import { getMetier, listMetiers } from "$lib/api/taxonomy";
   import type { ModuleItem } from "$lib/api/types";
@@ -54,8 +55,18 @@
     modules = await listModules(selectedCompetenceId);
   }
 
-  $effect(() => { loadCompetences(); });
-  $effect(() => { loadModules(); });
+  onMount(() => { loadCompetences(); });
+
+  // Garde-fou : ne recharge les modules que si la competence selectionnee a
+  // reellement change, pour eviter de relancer la requete a chaque fois que
+  // cet effet est re-declenche sans rapport avec la selection.
+  let modulesLoadedFor: number | null | undefined = $state(undefined);
+  $effect(() => {
+    if (selectedCompetenceId !== modulesLoadedFor) {
+      modulesLoadedFor = selectedCompetenceId;
+      loadModules();
+    }
+  });
 
   async function handleAddModule(event: SubmitEvent) {
     event.preventDefault();

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { adminGetSection, adminUpsertSection } from "$lib/api/content";
   import Eye from "@lucide/svelte/icons/eye";
   import EyeOff from "@lucide/svelte/icons/eye-off";
@@ -37,7 +38,7 @@
     }
   }
 
-  $effect(() => {
+  onMount(() => {
     load();
   });
 

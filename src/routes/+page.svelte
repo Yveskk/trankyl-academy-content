@@ -205,9 +205,9 @@
             {/if}
           </div>
           <div class="blog-card-body">
-            <span class="badge badge-green">{article.category}</span>
-            <h3>{article.title}</h3>
-            <p class="muted">{article.excerpt}</p>
+            <span class="badge badge-green">{localize(article.category, article.category_en)}</span>
+            <h3>{localize(article.title, article.title_en)}</h3>
+            <p class="muted">{localize(article.excerpt, article.excerpt_en)}</p>
           </div>
         </a>
       {/each}

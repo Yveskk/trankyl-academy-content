@@ -20,9 +20,11 @@
   let message = $state<string | null>(null);
   let error = $state<string | null>(null);
 
+  let loadedFor: number | null = $state(null);
   $effect(() => {
     const current = module;
-    if (auth.role !== "apprenant" || !current) return;
+    if (auth.role !== "apprenant" || !current || current.id === loadedFor) return;
+    loadedFor = current.id;
     myEnrollments().then((list) => {
       enrollment = list.find((e) => e.module_id === current.id) ?? null;
     });

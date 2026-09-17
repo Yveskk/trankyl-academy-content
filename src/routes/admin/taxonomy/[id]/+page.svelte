@@ -49,8 +49,12 @@
     }
   }
 
+  let loadedForId: number | null = $state(null);
   $effect(() => {
-    refresh();
+    if (metierId !== loadedForId) {
+      loadedForId = metierId;
+      refresh();
+    }
   });
 
   async function handleCreateNiveau(event: SubmitEvent) {

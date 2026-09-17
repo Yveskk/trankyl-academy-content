@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { adminListContactRequests, reviewContactRequest } from "$lib/api/contactRequests";
   import type { ContactRequestAdmin } from "$lib/api/types";
   import { snackbar } from "$lib/stores/snackbar.svelte";
@@ -31,7 +32,7 @@
     }
   }
 
-  $effect(() => {
+  onMount(() => {
     refresh();
   });
 
