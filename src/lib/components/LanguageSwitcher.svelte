@@ -1,56 +1,72 @@
 <script lang="ts">
+  import ChevronDown from "@lucide/svelte/icons/chevron-down";
   import { i18n, type Locale } from "$lib/stores/locale.svelte";
 
-  const locales: { code: Locale; label: string }[] = [
-    { code: "fr", label: "FR" },
-    { code: "en", label: "EN" },
-    { code: "es", label: "ES" },
+  const locales: { code: Locale; label: string; flag: string }[] = [
+    { code: "fr", label: "Français", flag: "🇫🇷" },
+    { code: "en", label: "English", flag: "🇬🇧" },
   ];
+
+  function handleChange(event: Event) {
+    i18n.set((event.currentTarget as HTMLSelectElement).value as Locale);
+  }
 </script>
 
-<div class="lang-switcher" role="group" aria-label="Choisir la langue / Language / Idioma">
-  {#each locales as loc}
-    <button
-      type="button"
-      class:active={i18n.locale === loc.code}
-      aria-pressed={i18n.locale === loc.code}
-      onclick={() => i18n.set(loc.code)}
-    >
-      {loc.label}
-    </button>
-  {/each}
+<div class="lang-switcher">
+  <select value={i18n.locale} onchange={handleChange} aria-label="Choisir la langue / Language">
+    {#each locales as loc}
+      <option value={loc.code}>{loc.flag} {loc.label}</option>
+    {/each}
+  </select>
+  <ChevronDown size={13} class="lang-chevron" />
 </div>
 
 <style>
   .lang-switcher {
+    position: relative;
     display: inline-flex;
     align-items: center;
-    gap: 0.15rem;
-    padding: 0.2rem;
+    padding: 0.3rem 1.5rem 0.3rem 0.65rem;
     border-radius: 999px;
     background: rgba(4, 51, 13, 0.06);
+    transition: background 0.15s;
   }
 
-  .lang-switcher button {
+  .lang-switcher:hover {
+    background: rgba(4, 51, 13, 0.1);
+  }
+
+  select {
+    appearance: none;
+    -webkit-appearance: none;
     border: none;
     background: none;
     font-family: inherit;
     font-weight: 700;
-    font-size: 0.72rem;
-    letter-spacing: 0.02em;
-    padding: 0.3rem 0.55rem;
-    border-radius: 999px;
+    font-size: 0.75rem;
     color: var(--ink-soft);
     cursor: pointer;
-    transition: all 0.15s;
+    padding: 0;
+    padding-right: 0.9rem;
   }
 
-  .lang-switcher button:hover {
+  select:focus {
+    outline: none;
     color: var(--green-dark);
   }
 
-  .lang-switcher button.active {
-    background: var(--green);
-    color: #fff;
+  select:focus-visible {
+    outline: 2px solid var(--green);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  :global(.lang-chevron) {
+    position: absolute;
+    right: 0.55rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--ink-soft);
+    pointer-events: none;
   }
 </style>

@@ -23,6 +23,7 @@
   import ChefHat from "@lucide/svelte/icons/chef-hat";
   import SprayCan from "@lucide/svelte/icons/spray-can";
   import Loader from "@lucide/svelte/icons/loader";
+  import Users from "@lucide/svelte/icons/users";
 
   let sessions = $state<ChatSession[]>([]);
   let currentSession = $state<ChatSessionDetail | null>(null);
@@ -45,14 +46,14 @@ Je suis là pour vous aider à trouver le bon prestataire certifié. Décrivez-m
 **Comment puis-je vous aider ?**`;
 
   onMount(async () => {
-    if (auth.role === "apprenant") {
+    if (auth.role === "client") {
       sessions = await listChatSessions();
     }
   });
 
   async function startNewSession() {
-    if (auth.role !== "apprenant") {
-      goto("/login");
+    if (auth.role !== "client") {
+      goto("/client/login");
       return;
     }
     try {
@@ -137,10 +138,32 @@ Je suis là pour vous aider à trouver le bon prestataire certifié. Décrivez-m
     }
   }
 
+  function escapeHtml(text: string): string {
+    return text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function isSafeButtonUrl(url: string): boolean {
+    // N'autorise que les liens internes ou http(s) explicites — bloque
+    // javascript:/data: et autres schemas exploitables dans un onclick.
+    return /^\//.test(url) || /^https?:\/\//i.test(url);
+  }
+
   function renderMarkdown(text: string): string {
-    // Parse interactive buttons: [btn:text:url]
-    let html = text
-      .replace(/\[btn:(.+?):(.+?)\]/g, '<a href="$2" class="chat-btn">$1</a>')
+    // Le message peut venir d'un utilisateur (son propre texte) ou de SITA,
+    // qui peut lui-meme citer des donnees issues de la base (nom d'un
+    // apprenant, description d'un metier...). On echappe TOUJOURS le HTML en
+    // premier avant d'appliquer le mini-markdown, pour eviter une injection
+    // XSS stockee via {@html} plus bas.
+    const escaped = escapeHtml(text);
+    let html = escaped
+      .replace(/\[btn:(.+?):(.+?)\]/g, (_match, label: string, url: string) =>
+        isSafeButtonUrl(url) ? `<a href="${url}" class="chat-btn">${label}</a>` : label
+      )
       .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
       .replace(/\*(.*?)\*/g, "<em>$1</em>")
       .replace(/\n/g, "<br>");
@@ -150,9 +173,9 @@ Je suis là pour vous aider à trouver le bon prestataire certifié. Décrivez-m
   const messages = $derived(currentSession?.messages ?? []);
 </script>
 
-<div class="chat-layout" class:no-sidebar={auth.role !== "apprenant"}>
+<div class="chat-layout" class:no-sidebar={auth.role !== "client"}>
   <!-- Sidebar -->
-  {#if auth.role === "apprenant"}
+  {#if auth.role === "client"}
     <aside class="chat-sidebar" class:collapsed={!showSidebar}>
       <div class="sidebar-header">
         <h2>Conversations</h2>
@@ -198,6 +221,7 @@ Je suis là pour vous aider à trouver le bon prestataire certifié. Décrivez-m
           <p>Assistant IA Trankyl </p>
         </div>
       </div>
+      <a class="browse-link" href="/prestataires/liste"><Users size={16} /> Voir la liste des prestataires</a>
     </div>
 
     <!-- Messages -->
@@ -290,7 +314,28 @@ Je suis là pour vous aider à trouver le bon prestataire certifié. Décrivez-m
   .chat-header { display: flex; align-items: center; gap: 0.75rem; padding: 1rem clamp(1.25rem, 4vw, 4rem); border-bottom: 1px solid #e1e9e3; background: rgba(255, 255, 255, .94); box-shadow: 0 2px 10px rgba(10, 50, 20, .03); }
   .btn-toggle-sidebar { border: none; background: none; color: #6b7280; cursor: pointer; padding: 0.4rem; border-radius: 8px; }
   .btn-toggle-sidebar:hover { background: #f3f4f6; }
-  .header-info { display: flex; align-items: center; gap: 0.6rem; }
+  .header-info { display: flex; align-items: center; gap: 0.6rem; flex: 1; }
+  .browse-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-shrink: 0;
+    padding: 0.55rem 1.1rem;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #04330d, #03a71a);
+    color: #fff;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+    box-shadow: 0 4px 14px rgba(3, 167, 26, 0.28);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .browse-link:hover {
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(3, 167, 26, 0.35);
+  }
   .header-info :global(.sparkle) { color: #d97706; }
   .header-info h1 { font-size: 1rem; font-weight: 800; margin: 0; color: #123b22; }
   .header-info p { font-size: 0.75rem; color: #6b7c70; margin: 0.15rem 0 0; }
@@ -315,8 +360,11 @@ Je suis là pour vous aider à trouver le bon prestataire certifié. Décrivez-m
   .msg-bubble { padding: 0.75rem 0.9rem; border-radius: 12px; font-size: 0.88rem; line-height: 1.6; color: #111827; }
   .message.assistant .msg-bubble { background: #fff; border: 1px solid #e5e7eb; border-bottom-left-radius: 4px; }
   .message.user .msg-bubble { background: #03a71a; color: #fff; border-bottom-right-radius: 4px; }
+  .msg-bubble :global(p) { color: inherit; margin: 0 0 0.5rem; }
+  .msg-bubble :global(p:last-child) { margin-bottom: 0; }
   .msg-bubble :global(strong) { font-weight: 700; }
   .msg-bubble :global(em) { font-style: italic; color: #6b7280; }
+  .message.user .msg-bubble :global(em) { color: rgba(255, 255, 255, 0.85); }
 
   /* Interactive Buttons */
   .msg-bubble :global(.chat-btn) {

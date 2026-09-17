@@ -1,20 +1,18 @@
 import { browser } from "$app/environment";
 import { fr } from "$lib/i18n/fr";
 import { en } from "$lib/i18n/en";
-import { es } from "$lib/i18n/es";
 
-export type Locale = "fr" | "en" | "es";
+export type Locale = "fr" | "en";
 
-const dictionaries = { fr, en, es };
+const dictionaries = { fr, en };
 const STORAGE_KEY = "academy_locale";
 
 function detectLocale(): Locale {
   if (!browser) return "fr";
   const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored === "fr" || stored === "en" || stored === "es") return stored;
+  if (stored === "fr" || stored === "en") return stored;
   const browserLang = navigator.language?.slice(0, 2);
   if (browserLang === "en") return "en";
-  if (browserLang === "es") return "es";
   return "fr";
 }
 

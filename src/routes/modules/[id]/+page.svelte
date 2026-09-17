@@ -7,6 +7,7 @@
   import { submitQuiz } from "$lib/api/quizzes";
   import type { Enrollment, Quiz, QuizResult } from "$lib/api/types";
   import { auth } from "$lib/stores/auth.svelte";
+  import { localize } from "$lib/i18n/localize";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
@@ -61,19 +62,19 @@
 </script>
 
 <svelte:head>
-  <title>{module ? `${module.titre} — Trankyl Academy` : "Trankyl Academy"}</title>
+  <title>{module ? `${localize(module.titre, module.titre_en)} — Trankyl Academy` : "Trankyl Academy"}</title>
 </svelte:head>
 
 {#if data.apiError}
   <p class="alert alert-error">{data.apiError}</p>
 {:else if module}
   <div class="section">
-    <h1>{module.titre}</h1>
+    <h1>{localize(module.titre, module.titre_en)}</h1>
     <div class="row" style="margin-bottom:1rem">
       <span class="badge badge-muted"><Clock size={11} />{module.duree_heures}h</span>
       {#if module.has_quiz}<span class="badge badge-gold"><Award size={11} />Avec quiz</span>{/if}
     </div>
-    {#if module.contenu}<p>{module.contenu}</p>{/if}
+    {#if module.contenu}<p>{localize(module.contenu, module.contenu_en)}</p>{/if}
   </div>
 
   <div class="card">

@@ -12,7 +12,7 @@
   import ArrowRight from "@lucide/svelte/icons/arrow-right";
   import BookOpen from "@lucide/svelte/icons/book-open";
   import type { Component } from "svelte";
-  import { articles } from "$lib/content/blog";
+  import { localize } from "$lib/i18n/localize";
   import { i18n } from "$lib/stores/locale.svelte";
   import type { PageData } from "./$types";
 
@@ -21,13 +21,34 @@
   let query = $state("");
   let activeSlide = $state(0);
 
+  // Image par defaut de chaque slide (ordre 1/2/3) : utilisee tant que
+  // l'admin n'a pas uploade de banniere active pour ce slot.
+  const defaultSlideImages: Record<number, { image: string; alt: string }> = {
+    1: {
+      image: "https://images.unsplash.com/photo-1504159506876-f8338247a14a?auto=format&fit=crop&w=1200&q=85",
+      alt: "Une maman africaine partage un moment avec ses enfants",
+    },
+    2: {
+      image: "https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=1200&q=85",
+      alt: "Une maman accompagne son enfant dans ses apprentissages",
+    },
+    3: {
+      image: "https://images.unsplash.com/photo-1542810634-71277d95dcbb?auto=format&fit=crop&w=1200&q=85",
+      alt: "Des enfants apprennent et grandissent ensemble",
+    },
+  };
+
+  function slideImage(ordre: number): { image: string; alt: string } {
+    const banner = data.banners.find((b) => b.ordre === ordre);
+    return banner ? { image: banner.image_url, alt: defaultSlideImages[ordre].alt } : defaultSlideImages[ordre];
+  }
+
   let slides = $derived([
     {
       eyebrow: i18n.dict.home.slide1Eyebrow,
       title: i18n.dict.home.slide1Title,
       text: i18n.dict.home.slide1Text,
-      image: "https://images.unsplash.com/photo-1504159506876-f8338247a14a?auto=format&fit=crop&w=1200&q=85",
-      alt: "Une maman africaine partage un moment avec ses enfants",
+      ...slideImage(1),
       action: i18n.dict.home.slide1Action,
       href: "/register",
     },
@@ -35,8 +56,7 @@
       eyebrow: i18n.dict.home.slide2Eyebrow,
       title: i18n.dict.home.slide2Title,
       text: i18n.dict.home.slide2Text,
-      image: "https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=1200&q=85",
-      alt: "Une maman accompagne son enfant dans ses apprentissages",
+      ...slideImage(2),
       action: i18n.dict.home.slide2Action,
       href: "/",
     },
@@ -44,8 +64,7 @@
       eyebrow: i18n.dict.home.slide3Eyebrow,
       title: i18n.dict.home.slide3Title,
       text: i18n.dict.home.slide3Text,
-      image: "https://images.unsplash.com/photo-1542810634-71277d95dcbb?auto=format&fit=crop&w=1200&q=85",
-      alt: "Des enfants apprennent et grandissent ensemble",
+      ...slideImage(3),
       action: i18n.dict.home.slide3Action,
       href: "/register",
     },
@@ -113,8 +132,8 @@
     {#if data.section}
       <div class="section-head">
         <span class="eyebrow">{i18n.dict.home.parcoursEyebrow}</span>
-        <h2>{data.section.title}</h2>
-        {#if data.section.subtitle}<p>{data.section.subtitle}</p>{/if}
+        <h2>{localize(data.section.title, data.section.title_en)}</h2>
+        {#if data.section.subtitle}<p>{localize(data.section.subtitle, data.section.subtitle_en)}</p>{/if}
       </div>
     {/if}
 
@@ -128,8 +147,8 @@
           {@const Icon = iconByCode[metier.code] ?? GraduationCap}
           <a class="category-card" href="/metiers/{metier.code}">
             <span class="icon-badge"><Icon size={24} /></span>
-            <h3>{metier.nom}</h3>
-            {#if metier.description}<p class="muted">{metier.description}</p>{/if}
+            <h3>{localize(metier.nom, metier.nom_en)}</h3>
+            {#if metier.description}<p class="muted">{localize(metier.description, metier.description_en)}</p>{/if}
             <span class="arrow">{i18n.dict.home.voirLeParcours} <ArrowRight size={14} /></span>
           </a>
         {/each}
@@ -166,6 +185,7 @@
     </div>
   </div>
 
+  {#if data.articles.length > 0}
   <section class="section">
     <div class="row" style="justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem;">
       <div class="section-head left" style="margin-bottom:0">
@@ -175,10 +195,14 @@
       <a class="row" href="/blog" style="gap:.3rem; font-size:.9rem;">{i18n.dict.home.toutVoir} <ArrowRight size={14} /></a>
     </div>
     <div class="grid-cards">
-      {#each articles.slice(0, 3) as article}
+      {#each data.articles.slice(0, 3) as article}
         <a class="blog-card" href="/blog/{article.slug}">
-          <div class="blog-cover" class:alt={article.cover === "gold"}>
-            <BookOpen size={28} />
+          <div class="blog-cover" class:alt={article.cover === "gold"} class:has-image={!!article.cover_image_url}>
+            {#if article.cover_image_url}
+              <img src={article.cover_image_url} alt="" />
+            {:else}
+              <BookOpen size={28} />
+            {/if}
           </div>
           <div class="blog-card-body">
             <span class="badge badge-green">{article.category}</span>
@@ -189,6 +213,7 @@
       {/each}
     </div>
   </section>
+  {/if}
 
   <section class="cta-band">
     <h2>{i18n.dict.home.ctaTitle}</h2>

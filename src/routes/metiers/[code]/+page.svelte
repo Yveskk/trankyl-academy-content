@@ -8,6 +8,7 @@
   import { enrollNiveau, myNiveauEnrollments } from "$lib/api/enrollments";
   import type { MetierDetail, NiveauEnrollment } from "$lib/api/types";
   import { auth } from "$lib/stores/auth.svelte";
+  import { localize } from "$lib/i18n/localize";
   import { i18n } from "$lib/stores/locale.svelte";
   import { snackbar } from "$lib/stores/snackbar.svelte";
   import type { PageData } from "./$types";
@@ -31,7 +32,7 @@
     return niveau.competences.reduce((sum, c) => sum + (c.modules?.length ?? 0), 0);
   }
 
-  const dateLocale = { fr: "fr-FR", en: "en-US", es: "es-ES" } as const;
+  const dateLocale = { fr: "fr-FR", en: "en-US" } as const;
 
   function formatDate(iso: string | null) {
     if (!iso) return i18n.dict.metierDetail.dateTbd;
@@ -74,8 +75,8 @@
       {i18n.dict.metierDetail.tousLesMetiers}
     </a>
     <span class="eyebrow">{i18n.dict.metierDetail.eyebrow}</span>
-    <h1>{data.metier.nom}</h1>
-    {#if data.metier.description}<p>{data.metier.description}</p>{/if}
+    <h1>{localize(data.metier.nom, data.metier.nom_en)}</h1>
+    {#if data.metier.description}<p>{localize(data.metier.description, data.metier.description_en)}</p>{/if}
   </div>
 
   {#if data.metier.niveaux.length === 0}
@@ -95,11 +96,11 @@
           disabled={enrollingId === niveau.id}
         >
           <div class="niveau-card-head">
-            <h3>Niveau {niveau.numero} — {niveau.nom}</h3>
+            <h3>Niveau {niveau.numero} — {localize(niveau.nom, niveau.nom_en)}</h3>
             {#if enrolled}<span class="badge badge-green"><CircleCheck size={11} />{i18n.dict.metierDetail.inscrit}</span>{/if}
           </div>
 
-          {#if niveau.description}<p class="muted">{niveau.description}</p>{/if}
+          {#if niveau.description}<p class="muted">{localize(niveau.description, niveau.description_en)}</p>{/if}
 
           <div class="row niveau-card-meta">
             <span class="badge badge-gold"><Calendar size={11} />{formatDate(niveau.date_debut)}</span>
@@ -109,7 +110,7 @@
           {#if niveau.competences.length > 0}
             <ul class="niveau-card-comps">
               {#each niveau.competences as comp}
-                <li>{comp.titre}</li>
+                <li>{localize(comp.titre, comp.titre_en)}</li>
               {/each}
             </ul>
           {/if}

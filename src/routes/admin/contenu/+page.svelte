@@ -7,6 +7,8 @@
 
   let title = $state("");
   let subtitle = $state("");
+  let titleEn = $state("");
+  let subtitleEn = $state("");
   let isActive = $state(true);
   let loading = $state(true);
   let saving = $state(false);
@@ -20,11 +22,15 @@
       const section = await adminGetSection(SECTION_KEY);
       title = section.title;
       subtitle = section.subtitle ?? "";
+      titleEn = section.title_en ?? "";
+      subtitleEn = section.subtitle_en ?? "";
       isActive = section.is_active;
     } catch {
       // Pas encore configuree : on part d'un formulaire vide, is_active par defaut a true.
       title = "";
       subtitle = "";
+      titleEn = "";
+      subtitleEn = "";
       isActive = true;
     } finally {
       loading = false;
@@ -41,7 +47,13 @@
     saved = false;
     error = null;
     try {
-      await adminUpsertSection(SECTION_KEY, { title, subtitle: subtitle || undefined, is_active: isActive });
+      await adminUpsertSection(SECTION_KEY, {
+        title,
+        subtitle: subtitle || undefined,
+        title_en: titleEn || undefined,
+        subtitle_en: subtitleEn || undefined,
+        is_active: isActive,
+      });
       saved = true;
     } catch (e) {
       error = (e as Error).message;
@@ -75,12 +87,20 @@
 
       <form onsubmit={handleSubmit}>
         <div class="field">
-          <label for="section-title">Titre</label>
+          <label for="section-title">Titre (FR)</label>
           <input id="section-title" bind:value={title} required />
         </div>
         <div class="field">
-          <label for="section-subtitle">Sous-titre</label>
+          <label for="section-subtitle">Sous-titre (FR)</label>
           <textarea id="section-subtitle" bind:value={subtitle} rows="3"></textarea>
+        </div>
+        <div class="field">
+          <label for="section-title-en">Title (EN)</label>
+          <input id="section-title-en" bind:value={titleEn} />
+        </div>
+        <div class="field">
+          <label for="section-subtitle-en">Subtitle (EN)</label>
+          <textarea id="section-subtitle-en" bind:value={subtitleEn} rows="3"></textarea>
         </div>
         <label class="toggle-row">
           <input type="checkbox" bind:checked={isActive} />

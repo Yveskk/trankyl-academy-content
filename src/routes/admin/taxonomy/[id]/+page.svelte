@@ -22,13 +22,15 @@
   let loading = $state(true);
 
   let showNewNiveau = $state(false);
-  let newNiveau = $state({ numero: 1, nom: "", description: "", date_debut: "" });
+  let newNiveau = $state({ numero: 1, nom: "", description: "", nom_en: "", description_en: "", date_debut: "" });
 
   let editingNiveauId = $state<number | null>(null);
-  let editNiveauForm = $state({ numero: 1, nom: "", description: "", date_debut: "" });
+  let editNiveauForm = $state({ numero: 1, nom: "", description: "", nom_en: "", description_en: "", date_debut: "" });
 
   let expandedNiveauId = $state<number | null>(null);
-  let newCompetence = $state<Record<number, { code: string; titre: string; description: string }>>({});
+  let newCompetence = $state<
+    Record<number, { code: string; titre: string; description: string; titre_en: string; description_en: string }>
+  >({});
 
   async function refresh() {
     loading = true;
@@ -36,7 +38,9 @@
       metier = await adminGetMetier(metierId);
       newNiveau.numero = metier.niveaux.length + 1;
       for (const n of metier.niveaux) {
-        if (!(n.id in newCompetence)) newCompetence[n.id] = { code: "", titre: "", description: "" };
+        if (!(n.id in newCompetence)) {
+          newCompetence[n.id] = { code: "", titre: "", description: "", titre_en: "", description_en: "" };
+        }
       }
     } catch (e) {
       snackbar.error((e as Error).message);
@@ -57,9 +61,11 @@
         numero: newNiveau.numero,
         nom: newNiveau.nom,
         description: newNiveau.description || undefined,
+        nom_en: newNiveau.nom_en || undefined,
+        description_en: newNiveau.description_en || undefined,
         date_debut: newNiveau.date_debut || null,
       });
-      newNiveau = { numero: newNiveau.numero + 1, nom: "", description: "", date_debut: "" };
+      newNiveau = { numero: newNiveau.numero + 1, nom: "", description: "", nom_en: "", description_en: "", date_debut: "" };
       showNewNiveau = false;
       snackbar.success("Niveau ajouté.");
       await refresh();
@@ -74,6 +80,8 @@
       numero: niveau.numero,
       nom: niveau.nom,
       description: niveau.description ?? "",
+      nom_en: niveau.nom_en ?? "",
+      description_en: niveau.description_en ?? "",
       date_debut: niveau.date_debut ?? "",
     };
   }
@@ -85,6 +93,8 @@
         numero: editNiveauForm.numero,
         nom: editNiveauForm.nom,
         description: editNiveauForm.description || undefined,
+        nom_en: editNiveauForm.nom_en || undefined,
+        description_en: editNiveauForm.description_en || undefined,
         date_debut: editNiveauForm.date_debut || null,
       });
       editingNiveauId = null;
@@ -114,8 +124,14 @@
     event.preventDefault();
     const form = newCompetence[niveauId];
     try {
-      await createCompetence(niveauId, { code: form.code, titre: form.titre, description: form.description || undefined });
-      newCompetence[niveauId] = { code: "", titre: "", description: "" };
+      await createCompetence(niveauId, {
+        code: form.code,
+        titre: form.titre,
+        description: form.description || undefined,
+        titre_en: form.titre_en || undefined,
+        description_en: form.description_en || undefined,
+      });
+      newCompetence[niveauId] = { code: "", titre: "", description: "", titre_en: "", description_en: "" };
       snackbar.success("Compétence ajoutée.");
       await refresh();
     } catch (e) {
@@ -173,12 +189,22 @@
               <input id="new-niveau-nom" placeholder="ex: Bases" bind:value={newNiveau.nom} required />
             </div>
             <div class="field">
-              <label for="new-niveau-desc">Description</label>
+              <label for="new-niveau-desc">Description (FR)</label>
               <input id="new-niveau-desc" placeholder="Optionnel" bind:value={newNiveau.description} />
             </div>
             <div class="field">
               <label for="new-niveau-date">Date de début</label>
               <input id="new-niveau-date" type="date" bind:value={newNiveau.date_debut} />
+            </div>
+          </div>
+          <div class="form-grid-4">
+            <div class="field">
+              <label for="new-niveau-nom-en">Name (EN)</label>
+              <input id="new-niveau-nom-en" placeholder="e.g. Basics" bind:value={newNiveau.nom_en} />
+            </div>
+            <div class="field">
+              <label for="new-niveau-desc-en">Description (EN)</label>
+              <input id="new-niveau-desc-en" placeholder="Optional" bind:value={newNiveau.description_en} />
             </div>
           </div>
           <div class="form-actions">
@@ -243,12 +269,22 @@
                           <input id="edit-niveau-nom-{niveau.id}" bind:value={editNiveauForm.nom} required />
                         </div>
                         <div class="field">
-                          <label for="edit-niveau-desc-{niveau.id}">Description</label>
+                          <label for="edit-niveau-desc-{niveau.id}">Description (FR)</label>
                           <input id="edit-niveau-desc-{niveau.id}" bind:value={editNiveauForm.description} />
                         </div>
                         <div class="field">
                           <label for="edit-niveau-date-{niveau.id}">Date de début</label>
                           <input id="edit-niveau-date-{niveau.id}" type="date" bind:value={editNiveauForm.date_debut} />
+                        </div>
+                      </div>
+                      <div class="form-grid-4">
+                        <div class="field">
+                          <label for="edit-niveau-nom-en-{niveau.id}">Name (EN)</label>
+                          <input id="edit-niveau-nom-en-{niveau.id}" bind:value={editNiveauForm.nom_en} />
+                        </div>
+                        <div class="field">
+                          <label for="edit-niveau-desc-en-{niveau.id}">Description (EN)</label>
+                          <input id="edit-niveau-desc-en-{niveau.id}" bind:value={editNiveauForm.description_en} />
                         </div>
                       </div>
                       <div class="form-actions">
@@ -291,8 +327,18 @@
                             <input id="new-comp-titre-{niveau.id}" placeholder="Titre de la compétence" bind:value={newCompetence[niveau.id].titre} required />
                           </div>
                           <div class="field">
-                            <label for="new-comp-desc-{niveau.id}">Description</label>
+                            <label for="new-comp-desc-{niveau.id}">Description (FR)</label>
                             <input id="new-comp-desc-{niveau.id}" placeholder="Optionnel" bind:value={newCompetence[niveau.id].description} />
+                          </div>
+                        </div>
+                        <div class="form-grid-3">
+                          <div class="field">
+                            <label for="new-comp-titre-en-{niveau.id}">Title (EN)</label>
+                            <input id="new-comp-titre-en-{niveau.id}" placeholder="Competence title" bind:value={newCompetence[niveau.id].titre_en} />
+                          </div>
+                          <div class="field">
+                            <label for="new-comp-desc-en-{niveau.id}">Description (EN)</label>
+                            <input id="new-comp-desc-en-{niveau.id}" placeholder="Optional" bind:value={newCompetence[niveau.id].description_en} />
                           </div>
                         </div>
                         <button class="btn-add-sm" type="submit">Ajouter la compétence</button>

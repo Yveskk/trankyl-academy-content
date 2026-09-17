@@ -17,34 +17,64 @@ export function adminGetMetier(metierId: number) {
   return api.get<MetierDetail>(`/taxonomy/admin/metiers/${metierId}`);
 }
 
-export function createMetier(payload: { code: string; nom: string; description?: string }) {
+export function createMetier(
+  payload: { code: string; nom: string; description?: string; nom_en?: string; description_en?: string }
+) {
   return api.post<Metier>("/taxonomy/metiers", payload);
 }
 
 export function updateMetier(
   metierId: number,
-  payload: { code: string; nom: string; description?: string; is_active: boolean }
+  payload: {
+    code: string;
+    nom: string;
+    description?: string;
+    nom_en?: string;
+    description_en?: string;
+    is_active: boolean;
+  }
 ) {
   return api.put<Metier>(`/taxonomy/metiers/${metierId}`, payload);
 }
 
 export function createNiveau(
   metierId: number,
-  payload: { numero: number; nom: string; description?: string; date_debut?: string | null }
+  payload: {
+    numero: number;
+    nom: string;
+    description?: string;
+    nom_en?: string;
+    description_en?: string;
+    date_debut?: string | null;
+  }
 ) {
   return api.post<Niveau>(`/taxonomy/metiers/${metierId}/niveaux`, payload);
 }
 
 export function updateNiveau(
   niveauId: number,
-  payload: { numero: number; nom: string; description?: string; date_debut?: string | null }
+  payload: {
+    numero: number;
+    nom: string;
+    description?: string;
+    nom_en?: string;
+    description_en?: string;
+    date_debut?: string | null;
+  }
 ) {
   return api.put<Niveau>(`/taxonomy/niveaux/${niveauId}`, payload);
 }
 
 export function createCompetence(
   niveauId: number,
-  payload: { code: string; titre: string; description?: string; ordre?: number }
+  payload: {
+    code: string;
+    titre: string;
+    description?: string;
+    titre_en?: string;
+    description_en?: string;
+    ordre?: number;
+  }
 ) {
   return api.post(`/taxonomy/niveaux/${niveauId}/competences`, payload);
 }

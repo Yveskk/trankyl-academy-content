@@ -1,19 +1,22 @@
 <script lang="ts">
   import Clock from "@lucide/svelte/icons/clock";
   import ArrowLeft from "@lucide/svelte/icons/arrow-left";
+  import { localize, localizeList } from "$lib/i18n/localize";
   import { i18n } from "$lib/stores/locale.svelte";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
   let article = $derived(data.article);
 
+  const dateLocale = { fr: "fr-FR", en: "en-US" } as const;
+
   function formatDate(iso: string) {
-    return new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+    return new Date(iso).toLocaleDateString(dateLocale[i18n.locale], { day: "numeric", month: "long", year: "numeric" });
   }
 </script>
 
 <svelte:head>
-  <title>{article.title} — Trankyl Academy</title>
+  <title>{localize(article.title, article.title_en)} — Trankyl Academy</title>
 </svelte:head>
 
 <div class="public-page article-page">
@@ -23,19 +26,23 @@
   </a>
 
   <div class="article-header">
-    <span class="eyebrow">{article.category}</span>
-    <h1>{article.title}</h1>
+    <span class="eyebrow">{localize(article.category, article.category_en)}</span>
+    <h1>{localize(article.title, article.title_en)}</h1>
     <div class="blog-meta">
-      <span>{formatDate(article.date)}</span>
+      <span>{formatDate(article.published_at)}</span>
       <span>&middot;</span>
-      <span class="row" style="gap:.25rem"><Clock size={13} />{article.readTime}</span>
+      <span class="row" style="gap:.25rem"><Clock size={13} />{article.read_time}</span>
     </div>
   </div>
 
+  {#if article.cover_image_url}
+    <img class="article-hero" src={article.cover_image_url} alt={localize(article.title, article.title_en)} />
+  {/if}
+
   <div class="article-layout section">
-    <aside class="article-aside">{i18n.dict.blog.lecture}<br /><strong>{article.readTime}</strong></aside>
+    <aside class="article-aside">{i18n.dict.blog.lecture}<br /><strong>{article.read_time}</strong></aside>
     <div class="article-body">
-      {#each article.content as paragraph, index}
+      {#each localizeList(article.content, article.content_en) as paragraph, index}
         <p class:first-paragraph={index === 0}>{paragraph}</p>
       {/each}
     </div>

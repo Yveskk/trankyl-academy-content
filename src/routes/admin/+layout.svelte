@@ -10,13 +10,25 @@
   import Shield from "@lucide/svelte/icons/shield";
   import LayoutTemplate from "@lucide/svelte/icons/layout-template";
   import GraduationCap from "@lucide/svelte/icons/graduation-cap";
+  import Newspaper from "@lucide/svelte/icons/newspaper";
+  import Image from "@lucide/svelte/icons/image";
+  import MessagesSquare from "@lucide/svelte/icons/messages-square";
+  import Menu from "@lucide/svelte/icons/menu";
+  import X from "@lucide/svelte/icons/x";
 
   let { children } = $props();
+  let sidebarOpen = $state(false);
 
   $effect(() => {
     if (auth.role !== "admin" && $page.url.pathname !== "/admin/login") {
       goto("/admin/login");
     }
+  });
+
+  // Ferme le tiroir mobile automatiquement a chaque changement de page.
+  $effect(() => {
+    $page.url.pathname;
+    sidebarOpen = false;
   });
 
   function handleLogout() {
@@ -30,6 +42,9 @@
     { href: "/admin/curriculum", label: "Curriculum", icon: BookOpen },
     { href: "/admin/apprenants", label: "Apprenants", icon: Users },
     { href: "/admin/inscriptions", label: "Inscriptions", icon: GraduationCap },
+    { href: "/admin/contacts", label: "Mises en relation", icon: MessagesSquare },
+    { href: "/admin/blog", label: "Blog", icon: Newspaper },
+    { href: "/admin/banniere", label: "Bannière", icon: Image },
     { href: "/admin/contenu", label: "Contenu du site", icon: LayoutTemplate },
   ];
 
@@ -38,8 +53,12 @@
 
 {#if auth.role === "admin" && $page.url.pathname !== "/admin/login"}
   <div class="admin-layout">
+    {#if sidebarOpen}
+      <button class="sidebar-backdrop" type="button" aria-label="Fermer le menu" onclick={() => (sidebarOpen = false)}></button>
+    {/if}
+
     <!-- Sidebar -->
-    <aside class="admin-sidebar">
+    <aside class="admin-sidebar" class:open={sidebarOpen}>
       <div class="sidebar-header">
         <div class="sidebar-brand">
           <img class="brand-logo" src="/logo-wh.svg" alt="Trankyl" />
@@ -48,6 +67,9 @@
             <span class="brand-role">Administration</span>
           </div>
         </div>
+        <button class="sidebar-close" type="button" aria-label="Fermer le menu" onclick={() => (sidebarOpen = false)}>
+          <X size={20} />
+        </button>
       </div>
 
       <nav class="sidebar-nav">
@@ -72,12 +94,18 @@
     <!-- Main content -->
     <main class="admin-main">
       <div class="admin-topbar">
+        <button class="sidebar-toggle" type="button" aria-label="Ouvrir le menu" onclick={() => (sidebarOpen = true)}>
+          <Menu size={22} />
+        </button>
         <h1 class="page-title">
           {#if currentPath.includes("/dashboard")}Tableau de bord
           {:else if currentPath.includes("/taxonomy")}Taxonomie
           {:else if currentPath.includes("/curriculum")}Curriculum
           {:else if currentPath.includes("/apprenants")}Apprenants
           {:else if currentPath.includes("/inscriptions")}Inscriptions
+          {:else if currentPath.includes("/contacts")}Mises en relation
+          {:else if currentPath.includes("/blog")}Blog
+          {:else if currentPath.includes("/banniere")}Bannière
           {:else if currentPath.includes("/contenu")}Contenu du site
           {:else}Admin
           {/if}
@@ -120,12 +148,52 @@
   .sidebar-header {
     padding: 1.5rem 1.25rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
   }
 
   .sidebar-brand {
     display: flex;
     align-items: center;
     gap: 0.75rem;
+  }
+
+  .sidebar-close {
+    display: none;
+    border: none;
+    background: none;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    padding: 0.3rem;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+
+  .sidebar-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+  }
+
+  .sidebar-toggle {
+    display: none;
+    border: none;
+    background: none;
+    color: #374151;
+    cursor: pointer;
+    padding: 0.3rem;
+    border-radius: 8px;
+    margin-right: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  .sidebar-toggle:hover {
+    background: #f3f4f6;
+  }
+
+  .sidebar-backdrop {
+    display: none;
   }
 
   .brand-name {
@@ -260,6 +328,30 @@
       position: fixed;
       transform: translateX(-100%);
       transition: transform 0.25s;
+      box-shadow: 0 0 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .admin-sidebar.open {
+      transform: translateX(0);
+    }
+
+    .sidebar-close {
+      display: inline-flex;
+    }
+
+    .sidebar-toggle {
+      display: inline-flex;
+    }
+
+    .sidebar-backdrop {
+      display: block;
+      position: fixed;
+      inset: 0;
+      background: rgba(4, 51, 13, 0.45);
+      border: none;
+      z-index: 99;
+      padding: 0;
+      cursor: pointer;
     }
 
     .admin-main {

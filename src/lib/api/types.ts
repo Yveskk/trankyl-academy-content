@@ -4,6 +4,8 @@ export interface Competence {
   code: string;
   titre: string;
   description: string | null;
+  titre_en: string | null;
+  description_en: string | null;
   ordre: number;
   modules: ModuleItem[];
 }
@@ -14,6 +16,8 @@ export interface Niveau {
   numero: number;
   nom: string;
   description: string | null;
+  nom_en: string | null;
+  description_en: string | null;
   date_debut: string | null;
   competences: Competence[];
 }
@@ -23,6 +27,8 @@ export interface Metier {
   code: string;
   nom: string;
   description: string | null;
+  nom_en: string | null;
+  description_en: string | null;
   is_active: boolean;
 }
 
@@ -36,6 +42,8 @@ export interface ModuleItem {
   code: string;
   titre: string;
   contenu: string | null;
+  titre_en: string | null;
+  contenu_en: string | null;
   duree_heures: number;
   ordre: number;
   has_quiz: boolean;
@@ -83,6 +91,16 @@ export interface NiveauEnrollment {
   created_at: string;
 }
 
+export interface NiveauEnrollmentDetail extends NiveauEnrollment {
+  niveau_nom: string;
+  niveau_nom_en: string | null;
+  niveau_numero: number;
+  date_debut: string | null;
+  metier_code: string;
+  metier_nom: string;
+  metier_nom_en: string | null;
+}
+
 export interface NiveauEnrollmentAdmin {
   id: number;
   apprenant_id: number;
@@ -115,10 +133,94 @@ export interface Apprenant {
   created_at: string;
 }
 
+export type ContactRequestStatus = "pending" | "approved" | "rejected";
+
+export interface ContactRequestBase {
+  id: number;
+  client_id: number;
+  prestataire_id: number;
+  initial_message: string | null;
+  status: ContactRequestStatus;
+  created_at: string;
+  reviewed_at: string | null;
+  unread_count: number;
+  last_message: string | null;
+  last_message_at: string | null;
+}
+
+export interface ContactRequestClient extends ContactRequestBase {
+  prestataire_nom: string;
+}
+
+export interface ContactRequestPrestataire extends ContactRequestBase {
+  client_nom: string;
+}
+
+export interface ContactRequestAdmin extends ContactRequestBase {
+  client_nom: string;
+  client_email: string;
+  client_phone: string | null;
+  client_created_at: string;
+  client_total_requests: number;
+
+  prestataire_nom: string;
+  prestataire_email: string;
+  prestataire_phone: string | null;
+  prestataire_is_verified: boolean;
+  prestataire_trust_score: number | null;
+  prestataire_certifications: string[];
+  prestataire_created_at: string;
+
+  message_count: number;
+  last_message_at: string | null;
+}
+
+export interface ContactMessage {
+  id: number;
+  contact_request_id: number;
+  sender_role: "client" | "prestataire";
+  content: string;
+  read: boolean;
+  created_at: string;
+}
+
+export interface Review {
+  id: number;
+  prestataire_id: number;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+  client_firstname: string;
+}
+
+export interface ReviewSummary {
+  average_rating: number | null;
+  review_count: number;
+  reviews: Review[];
+}
+
+export interface Client {
+  id: number;
+  firstname: string;
+  lastname: string;
+  email: string;
+  phone: string | null;
+  created_at: string;
+}
+
 export interface ApprenantDetail extends Apprenant {
   certifications: string[];
   enrollment_count: number;
   completed_count: number;
+  is_verified: boolean;
+  trust_score: number | null;
+}
+
+export interface MatchBreakdownItem {
+  label: string;
+  value_pct: number;
+  weight: number;
+  detail: string;
 }
 
 export interface Prestataire {
@@ -126,6 +228,9 @@ export interface Prestataire {
   firstname: string;
   lastname: string;
   certifications: string[];
+  trust_score: number | null;
+  match_score: number | null;
+  match_breakdown: Record<string, MatchBreakdownItem> | null;
 }
 
 export interface MatchingRequest {
@@ -158,6 +263,38 @@ export interface ContentSection {
   key: string;
   title: string;
   subtitle: string | null;
+  title_en: string | null;
+  subtitle_en: string | null;
+  is_active: boolean;
+  updated_at: string;
+}
+
+export interface BlogArticle {
+  id: number;
+  slug: string;
+  title: string;
+  excerpt: string;
+  category: string;
+  title_en: string | null;
+  excerpt_en: string | null;
+  category_en: string | null;
+  read_time: string;
+  cover: "green" | "gold";
+  cover_image_url: string | null;
+  published_at: string;
+  is_active: boolean;
+  updated_at: string;
+}
+
+export interface BlogArticleDetail extends BlogArticle {
+  content: string[];
+  content_en: string[] | null;
+}
+
+export interface Banner {
+  id: number;
+  ordre: number;
+  image_url: string;
   is_active: boolean;
   updated_at: string;
 }

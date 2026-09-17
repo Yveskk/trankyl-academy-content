@@ -1,12 +1,12 @@
 # trankyl-academy-content
 
-Site web (SvelteKit) de Trankyl Academy — taxonomie et curriculum sous licence CC-BY-4.0, code du site sous MIT.
+Site web (SvelteKit) de Trankyl Academy — taxonomie et curriculum under CC-BY-4.0 license, site code under MIT.
 
 Ce site sert deux publics :
 
 - **Public / apprenants** : parcourir les metiers, s'inscrire a un module, passer le quiz de fin de module,
   suivre sa progression et ses certifications (`/`, `/metiers/[code]`, `/modules/[id]`, `/login`, `/register`,
-  `/dashboard`), lire le blog (`/blog`), consulter la FAQ (`/faq`), en savoir plus (`/a-propos`, `/contact`)
+  `/dashboard`), lire le blog (`/blog`), en savoir plus (`/a-propos`, `/contact`)
 - **Admins** : gerer la taxonomie (metiers/niveaux/competences) et le curriculum (modules/quiz) — tout se fait
   ici, cote site, pas de saisie directe en base (`/admin/taxonomy`, `/admin/curriculum`)
 
@@ -54,3 +54,9 @@ node build/index.js   # ou via PM2, comme trankyl_backend_nodejs
 ```
 
 Variables lues au demarrage du serveur buildé : `PORT` (defaut 3000), `ORIGIN` (URL publique du site).
+
+## License
+
+- Site code: [MIT](./LICENSE)
+- Skills taxonomy and training curriculum: [CC-BY-4.0](./LICENSE-CONTENT) — freely reusable, including
+  commercially, as long as Trankyl Academy is credited as the source.

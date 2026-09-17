@@ -1,6 +1,9 @@
 <script lang="ts">
   import Shield from "@lucide/svelte/icons/shield";
   import Lock from "@lucide/svelte/icons/lock";
+  import LayoutDashboard from "@lucide/svelte/icons/layout-dashboard";
+  import Layers from "@lucide/svelte/icons/layers";
+  import BarChart3 from "@lucide/svelte/icons/bar-chart-3";
   import { goto } from "$app/navigation";
   import { adminLogin } from "$lib/api/auth";
   import { auth } from "$lib/stores/auth.svelte";
@@ -26,138 +29,51 @@
   }
 </script>
 
-<div class="login-wrapper">
-  <div class="login-card">
-    <div class="login-header">
-      <div class="login-icon">
-        <Shield size={28} />
+<div class="auth-split admin-auth-split">
+  <div class="auth-brand-panel">
+    <img class="auth-brand-logo" src="/logo-wh.svg" alt="Trankyl" />
+    <div class="auth-brand-body">
+      <h2 class="auth-brand-title">Espace administration</h2>
+      <p class="auth-brand-text">Gérez la taxonomie, le curriculum, les apprenants et le contenu de Trankyl Academy.</p>
+      <div class="auth-value-list">
+        <div class="auth-value-item"><span class="value-icon"><Layers size={17} /></span>Taxonomie & curriculum</div>
+        <div class="auth-value-item"><span class="value-icon"><BarChart3 size={17} /></span>Suivi des apprenants et certifications</div>
+        <div class="auth-value-item"><span class="value-icon"><LayoutDashboard size={17} /></span>Tableau de bord centralisé</div>
       </div>
-      <h1>Administration</h1>
-      <p>Trankyl Academy — Panneau de gestion</p>
     </div>
+  </div>
+
+  <div class="auth-form-panel">
+    <span class="icon-badge"><Shield size={22} /></span>
+    <h1>Administration</h1>
+    <p class="muted">Connectez-vous pour accéder au panneau de gestion.</p>
 
     <form onsubmit={handleSubmit}>
       <div class="field">
         <label for="email">Adresse email</label>
-        <input
-          id="email"
-          type="email"
-          placeholder="admin@trankyl.com"
-          bind:value={email}
-          required
-        />
+        <input id="email" type="email" placeholder="admin@trankyl.com" bind:value={email} required />
       </div>
       <div class="field">
         <label for="password">Mot de passe</label>
         <div class="password-input">
           <Lock size={16} class="lock-icon" />
-          <input
-            id="password"
-            type="password"
-            placeholder="••••••••"
-            bind:value={password}
-            required
-          />
+          <input id="password" type="password" placeholder="••••••••" bind:value={password} required />
         </div>
       </div>
-      <button class="login-btn" type="submit" disabled={loading}>
+      <button class="btn btn-primary" type="submit" disabled={loading}>
         {loading ? "Connexion..." : "Se connecter"}
       </button>
     </form>
 
-    {#if error}
-      <div class="alert-login">{error}</div>
-    {/if}
-
-    <div class="login-footer">
-      <a href="/">← Retour au site public</a>
-    </div>
+    {#if error}<p class="alert alert-error">{error}</p>{/if}
+    <p class="form-footer muted"><a href="/mot-de-passe-oublie?role=admin">Mot de passe oublié ?</a></p>
+    <p class="form-footer muted"><a href="/">← Retour au site public</a></p>
   </div>
 </div>
 
 <style>
-  .login-wrapper {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #0a1f10 0%, #04330d 50%, #0a1f10 100%);
-    padding: 2rem;
-  }
-
-  .login-card {
-    width: 100%;
-    max-width: 400px;
-    background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
-    padding: 2.5rem 2rem;
-  }
-
-  .login-header {
-    text-align: center;
-    margin-bottom: 2rem;
-  }
-
-  .login-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 60px;
-    height: 60px;
-    border-radius: 16px;
-    background: linear-gradient(135deg, #04330d, #03a71a);
-    color: #fec600;
-    margin-bottom: 1rem;
-  }
-
-  .login-header h1 {
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: #111827;
-    margin: 0 0 0.3rem;
-  }
-
-  .login-header p {
-    font-size: 0.85rem;
-    color: #6b7280;
-    margin: 0;
-  }
-
-  form {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .field {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-  }
-
-  label {
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: #374151;
-  }
-
-  input {
-    font-family: inherit;
-    font-size: 0.92rem;
-    padding: 0.7rem 0.85rem;
-    border: 1.5px solid #d1d5db;
-    border-radius: 10px;
-    background: #f9fafb;
-    color: #111827;
-    transition: all 0.15s;
-  }
-
-  input:focus {
-    outline: none;
-    border-color: #03a71a;
-    box-shadow: 0 0 0 3px rgba(3, 167, 26, 0.12);
-    background: #fff;
+  .admin-auth-split :global(.auth-brand-panel) {
+    background: linear-gradient(155deg, #0a1f10 0%, #04330d 55%, #0a1f10 130%);
   }
 
   .password-input {
@@ -175,58 +91,5 @@
   .password-input input {
     padding-left: 2.5rem;
     width: 100%;
-  }
-
-  .login-btn {
-    width: 100%;
-    padding: 0.8rem;
-    border: none;
-    border-radius: 10px;
-    background: linear-gradient(135deg, #03a71a, #028a15);
-    color: #fff;
-    font-family: inherit;
-    font-weight: 700;
-    font-size: 0.92rem;
-    cursor: pointer;
-    transition: all 0.15s;
-    margin-top: 0.5rem;
-  }
-
-  .login-btn:hover:not(:disabled) {
-    background: linear-gradient(135deg, #028a15, #016d10);
-    box-shadow: 0 4px 12px rgba(3, 167, 26, 0.3);
-  }
-
-  .login-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  .alert-login {
-    margin-top: 1rem;
-    padding: 0.7rem 1rem;
-    border-radius: 8px;
-    background: #fef2f2;
-    color: #991b1b;
-    font-size: 0.85rem;
-    font-weight: 600;
-    border: 1px solid #fecaca;
-    text-align: center;
-  }
-
-  .login-footer {
-    margin-top: 1.5rem;
-    text-align: center;
-  }
-
-  .login-footer a {
-    font-size: 0.82rem;
-    color: #6b7280;
-    text-decoration: none;
-    font-weight: 600;
-  }
-
-  .login-footer a:hover {
-    color: #03a71a;
   }
 </style>

@@ -18,11 +18,11 @@
   let metiers = $state<Metier[]>([]);
   let loading = $state(true);
 
-  let newMetier = $state({ code: "", nom: "", description: "" });
+  let newMetier = $state({ code: "", nom: "", description: "", nom_en: "", description_en: "" });
   let showNewMetier = $state(false);
 
   let editingMetierId = $state<number | null>(null);
-  let editMetierForm = $state({ code: "", nom: "", description: "" });
+  let editMetierForm = $state({ code: "", nom: "", description: "", nom_en: "", description_en: "" });
 
   const iconByCode: Record<string, any> = {
     nounou: Baby,
@@ -49,8 +49,14 @@
   async function handleCreateMetier(event: SubmitEvent) {
     event.preventDefault();
     try {
-      await createMetier({ code: newMetier.code, nom: newMetier.nom, description: newMetier.description || undefined });
-      newMetier = { code: "", nom: "", description: "" };
+      await createMetier({
+        code: newMetier.code,
+        nom: newMetier.nom,
+        description: newMetier.description || undefined,
+        nom_en: newMetier.nom_en || undefined,
+        description_en: newMetier.description_en || undefined,
+      });
+      newMetier = { code: "", nom: "", description: "", nom_en: "", description_en: "" };
       showNewMetier = false;
       snackbar.success("Métier créé.");
       await refresh();
@@ -61,7 +67,13 @@
 
   function startEditMetier(metier: Metier) {
     editingMetierId = metier.id;
-    editMetierForm = { code: metier.code, nom: metier.nom, description: metier.description ?? "" };
+    editMetierForm = {
+      code: metier.code,
+      nom: metier.nom,
+      description: metier.description ?? "",
+      nom_en: metier.nom_en ?? "",
+      description_en: metier.description_en ?? "",
+    };
   }
 
   async function handleSaveMetier(metier: Metier, event: SubmitEvent) {
@@ -71,6 +83,8 @@
         code: editMetierForm.code,
         nom: editMetierForm.nom,
         description: editMetierForm.description || undefined,
+        nom_en: editMetierForm.nom_en || undefined,
+        description_en: editMetierForm.description_en || undefined,
         is_active: metier.is_active,
       });
       editingMetierId = null;
@@ -87,6 +101,8 @@
         code: metier.code,
         nom: metier.nom,
         description: metier.description ?? undefined,
+        nom_en: metier.nom_en ?? undefined,
+        description_en: metier.description_en ?? undefined,
         is_active: !metier.is_active,
       });
       snackbar.success(metier.is_active ? "Métier désactivé." : "Métier activé.");
@@ -134,8 +150,18 @@
           </div>
         </div>
         <div class="field">
-          <label for="metier-desc">Description</label>
+          <label for="metier-desc">Description (FR)</label>
           <input id="metier-desc" placeholder="Description du métier" bind:value={newMetier.description} />
+        </div>
+        <div class="form-grid">
+          <div class="field">
+            <label for="metier-nom-en">Name (EN)</label>
+            <input id="metier-nom-en" placeholder="e.g. Nanny" bind:value={newMetier.nom_en} />
+          </div>
+          <div class="field">
+            <label for="metier-desc-en">Description (EN)</label>
+            <input id="metier-desc-en" placeholder="Job description" bind:value={newMetier.description_en} />
+          </div>
         </div>
         <div class="form-actions">
           <button class="btn-primary-sm" type="submit">Créer</button>
@@ -212,8 +238,18 @@
                       </div>
                     </div>
                     <div class="field">
-                      <label for="edit-metier-desc">Description</label>
+                      <label for="edit-metier-desc">Description (FR)</label>
                       <input id="edit-metier-desc" bind:value={editMetierForm.description} />
+                    </div>
+                    <div class="form-grid">
+                      <div class="field">
+                        <label for="edit-metier-nom-en">Name (EN)</label>
+                        <input id="edit-metier-nom-en" bind:value={editMetierForm.nom_en} />
+                      </div>
+                      <div class="field">
+                        <label for="edit-metier-desc-en">Description (EN)</label>
+                        <input id="edit-metier-desc-en" bind:value={editMetierForm.description_en} />
+                      </div>
                     </div>
                     <div class="form-actions">
                       <button class="btn-primary-sm" type="submit">Enregistrer</button>

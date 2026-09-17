@@ -1,9 +1,10 @@
 <script lang="ts">
-  import { createModule, createQuiz, deleteModule, listModules } from "$lib/api/curriculum";
+  import { createModule, createQuiz, deleteModule, listModules, updateModule } from "$lib/api/curriculum";
   import { getMetier, listMetiers } from "$lib/api/taxonomy";
   import type { ModuleItem } from "$lib/api/types";
   import Plus from "@lucide/svelte/icons/plus";
   import Trash2 from "@lucide/svelte/icons/trash-2";
+  import Pencil from "@lucide/svelte/icons/pencil";
   import Award from "@lucide/svelte/icons/award";
   import Clock from "@lucide/svelte/icons/clock";
   import BookOpen from "@lucide/svelte/icons/book-open";
@@ -19,8 +20,11 @@
   let loading = $state(true);
   let error = $state<string | null>(null);
 
-  let newModule = $state({ code: "", titre: "", contenu: "", duree_heures: 2 });
+  let newModule = $state({ code: "", titre: "", contenu: "", titre_en: "", contenu_en: "", duree_heures: 2 });
   let showNewModule = $state(false);
+
+  let editingModuleId = $state<number | null>(null);
+  let editModule = $state({ code: "", titre: "", contenu: "", titre_en: "", contenu_en: "", duree_heures: 2, ordre: 0 });
 
   let quizModuleId = $state<number | null>(null);
   let quizTitre = $state("");
@@ -63,9 +67,11 @@
         code: newModule.code,
         titre: newModule.titre,
         contenu: newModule.contenu || undefined,
+        titre_en: newModule.titre_en || undefined,
+        contenu_en: newModule.contenu_en || undefined,
         duree_heures: newModule.duree_heures,
       });
-      newModule = { code: "", titre: "", contenu: "", duree_heures: 2 };
+      newModule = { code: "", titre: "", contenu: "", titre_en: "", contenu_en: "", duree_heures: 2 };
       showNewModule = false;
       await loadModules();
     } catch (e) {
@@ -77,6 +83,39 @@
     error = null;
     try {
       await deleteModule(id);
+      await loadModules();
+    } catch (e) {
+      error = (e as Error).message;
+    }
+  }
+
+  function startEditModule(m: ModuleItem) {
+    editingModuleId = m.id;
+    editModule = {
+      code: m.code,
+      titre: m.titre,
+      contenu: m.contenu ?? "",
+      titre_en: m.titre_en ?? "",
+      contenu_en: m.contenu_en ?? "",
+      duree_heures: m.duree_heures,
+      ordre: m.ordre,
+    };
+  }
+
+  async function handleSaveModule(moduleId: number, event: SubmitEvent) {
+    event.preventDefault();
+    error = null;
+    try {
+      await updateModule(moduleId, {
+        code: editModule.code,
+        titre: editModule.titre,
+        contenu: editModule.contenu || undefined,
+        titre_en: editModule.titre_en || undefined,
+        contenu_en: editModule.contenu_en || undefined,
+        duree_heures: editModule.duree_heures,
+        ordre: editModule.ordre,
+      });
+      editingModuleId = null;
       await loadModules();
     } catch (e) {
       error = (e as Error).message;
@@ -171,8 +210,18 @@
             </div>
           </div>
           <div class="field">
-            <label>Contenu</label>
+            <label>Contenu (FR)</label>
             <textarea placeholder="Description du contenu du module..." bind:value={newModule.contenu}></textarea>
+          </div>
+          <div class="form-grid">
+            <div class="field">
+              <label for="new-module-titre-en">Titre (EN)</label>
+              <input id="new-module-titre-en" placeholder="Module title" bind:value={newModule.titre_en} />
+            </div>
+          </div>
+          <div class="field">
+            <label for="new-module-contenu-en">Contenu (EN)</label>
+            <textarea id="new-module-contenu-en" placeholder="Module content description..." bind:value={newModule.contenu_en}></textarea>
           </div>
           <div class="form-actions">
             <button class="btn-primary-sm" type="submit">Ajouter</button>
@@ -203,10 +252,50 @@
               {#if !m.has_quiz}
                 <button class="btn-outline-sm" onclick={() => startQuiz(m.id)}>+ Quiz</button>
               {/if}
+              <button class="btn-outline-sm" onclick={() => startEditModule(m)}>
+                <Pencil size={13} /> Modifier
+              </button>
               <button class="btn-danger-sm" onclick={() => handleDeleteModule(m.id)}>
                 <Trash2 size={13} /> Supprimer
               </button>
             </div>
+
+            {#if editingModuleId === m.id}
+              <form class="edit-module-form" onsubmit={(e) => handleSaveModule(m.id, e)}>
+                <div class="form-grid">
+                  <div class="field">
+                    <label for="edit-module-code-{m.id}">Code</label>
+                    <input id="edit-module-code-{m.id}" bind:value={editModule.code} required />
+                  </div>
+                  <div class="field">
+                    <label for="edit-module-titre-{m.id}">Titre (FR)</label>
+                    <input id="edit-module-titre-{m.id}" bind:value={editModule.titre} required />
+                  </div>
+                  <div class="field">
+                    <label for="edit-module-duree-{m.id}">Durée (heures)</label>
+                    <input id="edit-module-duree-{m.id}" type="number" step="0.5" bind:value={editModule.duree_heures} />
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="edit-module-contenu-{m.id}">Contenu (FR)</label>
+                  <textarea id="edit-module-contenu-{m.id}" bind:value={editModule.contenu}></textarea>
+                </div>
+                <div class="form-grid">
+                  <div class="field">
+                    <label for="edit-module-titre-en-{m.id}">Titre (EN)</label>
+                    <input id="edit-module-titre-en-{m.id}" bind:value={editModule.titre_en} />
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="edit-module-contenu-en-{m.id}">Contenu (EN)</label>
+                  <textarea id="edit-module-contenu-en-{m.id}" bind:value={editModule.contenu_en}></textarea>
+                </div>
+                <div class="form-actions">
+                  <button class="btn-primary-sm" type="submit">Enregistrer</button>
+                  <button class="btn-cancel" type="button" onclick={() => (editingModuleId = null)}>Annuler</button>
+                </div>
+              </form>
+            {/if}
           </div>
         {/each}
       </div>
@@ -500,6 +589,12 @@
     color: #6b7280;
     margin: 0.3rem 0 0.5rem;
     line-height: 1.5;
+  }
+
+  .edit-module-form {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px dashed #d1d5db;
   }
 
   .module-actions {

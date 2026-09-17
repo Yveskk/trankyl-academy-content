@@ -9,6 +9,9 @@ export function adminGetSection(key: string) {
   return api.get<ContentSection>(`/content/admin/sections/${key}`);
 }
 
-export function adminUpsertSection(key: string, payload: { title: string; subtitle?: string; is_active: boolean }) {
+export function adminUpsertSection(
+  key: string,
+  payload: { title: string; subtitle?: string; title_en?: string; subtitle_en?: string; is_active: boolean }
+) {
   return api.put<ContentSection>(`/content/admin/sections/${key}`, payload);
 }

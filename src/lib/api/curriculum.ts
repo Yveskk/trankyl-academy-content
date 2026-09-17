@@ -19,10 +19,27 @@ export function createModule(payload: {
   code: string;
   titre: string;
   contenu?: string;
+  titre_en?: string;
+  contenu_en?: string;
   duree_heures?: number;
   ordre?: number;
 }) {
   return api.post<ModuleItem>("/curriculum/modules", payload);
+}
+
+export function updateModule(
+  moduleId: number,
+  payload: {
+    code: string;
+    titre: string;
+    contenu?: string;
+    titre_en?: string;
+    contenu_en?: string;
+    duree_heures?: number;
+    ordre?: number;
+  }
+) {
+  return api.put<ModuleItem>(`/curriculum/modules/${moduleId}`, payload);
 }
 
 export function createQuiz(payload: {

@@ -1629,6 +1629,167 @@ legend {
   max-width: none;
 }
 
+/* --- Auth split pages (login / register / admin login) --- */
+
+.auth-split {
+  max-width: 980px;
+  margin: 2.5rem auto;
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  background: var(--surface);
+}
+
+.auth-brand-panel {
+  position: relative;
+  overflow: hidden;
+  /* Or/jaune dominant, vert en soutien seulement — meme hierarchie que
+     l'app client reelle (trankyl_client_react008 : primary = or, secondary
+     = vert), plutot que le vert en couleur dominante utilise ailleurs sur
+     ce site jusqu'ici. */
+  background: linear-gradient(155deg, #ffd633 0%, var(--gold) 55%, #e0a800 130%);
+  color: var(--green-deep);
+  padding: 3rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-brand-panel::before {
+  content: "";
+  position: absolute;
+  width: 340px;
+  height: 340px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(4, 51, 13, 0.12), transparent 72%);
+  top: -110px;
+  right: -110px;
+  pointer-events: none;
+}
+
+.auth-brand-panel::after {
+  content: "";
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.35), transparent 72%);
+  bottom: -100px;
+  left: -80px;
+  pointer-events: none;
+}
+
+.auth-brand-logo {
+  position: relative;
+  height: 30px;
+  width: auto;
+}
+
+.auth-brand-body {
+  position: relative;
+}
+
+.auth-brand-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 2.6vw, 1.85rem);
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 1.75rem 0 0.75rem;
+  color: var(--green-deep);
+}
+
+.auth-brand-text {
+  color: rgba(4, 51, 13, 0.72);
+  font-size: 0.92rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.auth-value-list {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 2.25rem;
+}
+
+.auth-value-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.87rem;
+  font-weight: 700;
+  color: var(--green-deep);
+}
+
+.auth-value-item .value-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba(4, 51, 13, 0.1);
+  color: var(--green-deep);
+  flex-shrink: 0;
+}
+
+.auth-form-panel {
+  padding: 3rem 2.75rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.auth-form-panel .icon-badge {
+  margin-bottom: 1rem;
+}
+
+.auth-form-panel h1 {
+  margin: 0 0 0.35rem;
+}
+
+.auth-form-panel > .muted {
+  margin-bottom: 1.75rem;
+}
+
+.auth-form-panel form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.auth-form-panel .form-footer {
+  margin-top: 1.5rem;
+  font-size: 0.88rem;
+}
+
+@media (max-width: 860px) {
+  .auth-split {
+    grid-template-columns: 1fr;
+    margin: 1.25rem auto;
+    border-radius: var(--radius);
+    max-width: 480px;
+  }
+
+  .auth-brand-panel {
+    padding: 2rem 1.75rem 1.75rem;
+  }
+
+  .auth-brand-title {
+    margin-top: 1.25rem;
+  }
+
+  .auth-value-list {
+    display: none;
+  }
+
+  .auth-form-panel {
+    padding: 2rem 1.75rem;
+  }
+}
+
 /* --- alerts / states --- */
 
 .alert {
@@ -1761,6 +1922,17 @@ legend {
 
 .blog-cover.alt {
   background: linear-gradient(135deg, #7a5c00, var(--gold));
+}
+
+.blog-cover.has-image {
+  padding: 0;
+  background: none;
+}
+
+.blog-cover.has-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .blog-card-body {
@@ -2126,6 +2298,11 @@ legend {
   opacity: 0.9;
 }
 
+.editorial-grid .blog-cover.has-image {
+  padding: 0;
+  background: none;
+}
+
 .cover-index {
   font-family: var(--font-display);
   font-size: 2.8rem;
@@ -2183,6 +2360,14 @@ legend {
 
 .article-header .blog-meta {
   justify-content: flex-start;
+}
+
+.article-hero {
+  width: 100%;
+  max-height: 420px;
+  object-fit: cover;
+  border-radius: var(--radius);
+  margin: 1.5rem 0 0;
 }
 
 .article-layout {
@@ -2360,6 +2545,151 @@ legend {
   }
 }
 
+/* --- identite utilisateur connecte (header) --- */
+
+.user-menu-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.user-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.2rem 0.55rem 0.2rem 0.2rem;
+  border: none;
+  border-radius: 999px;
+  background: rgba(4, 51, 13, 0.06);
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.user-chip:hover {
+  background: rgba(4, 51, 13, 0.1);
+}
+
+:global(.user-chip-chevron) {
+  color: var(--ink-soft);
+  transition: transform 0.15s;
+}
+
+.user-chip[aria-expanded="true"] :global(.user-chip-chevron) {
+  transform: rotate(180deg);
+}
+
+.user-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--green-deep), var(--green));
+  color: var(--gold);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.68rem;
+  flex-shrink: 0;
+}
+
+.user-name {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.user-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  border: 0;
+  background: transparent;
+  cursor: default;
+}
+
+.user-menu {
+  position: absolute;
+  z-index: 91;
+  top: calc(100% + 0.4rem);
+  right: 0;
+  min-width: 160px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  padding: 0.35rem;
+}
+
+.user-menu button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem 0.7rem;
+  border: none;
+  border-radius: 7px;
+  background: none;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--danger);
+  cursor: pointer;
+}
+
+.user-menu button:hover {
+  background: var(--danger-soft);
+}
+
+/* Specificite volontairement alignee sur ".mobile-menu-drawer button:not(.mobile-menu-cta)"
+   (definie plus haut dans ce fichier, pour tous les boutons du menu mobile)
+   afin de ne pas heriter de sa bordure/couleur rouge par defaut : ces deux
+   boutons ont leur propre apparence (chip d'identite, item de menu deroulant). */
+.mobile-menu-drawer button.mobile-user-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  margin-top: 0;
+  padding: 0.6rem 0.75rem;
+  border: none;
+  border-top: none;
+  border-bottom: 1px solid var(--border);
+  border-radius: 9px;
+  background: none;
+  color: var(--ink);
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.mobile-user-chip .user-avatar {
+  width: 34px;
+  height: 34px;
+  font-size: 0.8rem;
+}
+
+.mobile-user-chip .user-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.88rem;
+  color: var(--ink);
+}
+
+.mobile-menu-drawer button.mobile-logout-btn {
+  display: block;
+  width: 100%;
+  margin-top: 0;
+  padding: 0.6rem 0.75rem;
+  text-align: left;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--danger);
+  cursor: pointer;
+}
+
 /* --- notification badge --- */
 
 .msg-link {
@@ -2382,6 +2712,67 @@ legend {
   justify-content: center;
   padding: 0 4px;
   line-height: 1;
+}
+
+.notif-prompt {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1.5rem;
+  background: var(--green-soft);
+  color: var(--green-deep);
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(4, 51, 13, 0.1);
+}
+
+.notif-prompt span {
+  flex: 1;
+  min-width: 0;
+}
+
+.notif-prompt-enable {
+  flex-shrink: 0;
+  padding: 0.35rem 0.85rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--green);
+  color: #fff;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.notif-prompt-enable:hover {
+  background: var(--green-dark);
+}
+
+.notif-prompt-dismiss {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--green-deep);
+  cursor: pointer;
+}
+
+.notif-prompt-dismiss:hover {
+  background: rgba(4, 51, 13, 0.1);
+}
+
+@media (max-width: 640px) {
+  .notif-prompt {
+    padding: 0.6rem 1rem;
+  }
+  .notif-prompt span {
+    font-size: 0.8rem;
+  }
 }
 
 /* Full-width homepage banner */
