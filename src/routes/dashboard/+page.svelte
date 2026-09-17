@@ -50,6 +50,10 @@
   }
 </script>
 
+<svelte:head>
+  <meta name="robots" content="noindex, nofollow" />
+</svelte:head>
+
 <h1>{i18n.dict.dashboard.title}</h1>
 
 {#if loading}

@@ -8,6 +8,7 @@
   import { auth } from "$lib/stores/auth.svelte";
   import { localize } from "$lib/i18n/localize";
   import { snackbar } from "$lib/stores/snackbar.svelte";
+  import Seo from "$lib/components/Seo.svelte";
   import Award from "@lucide/svelte/icons/award";
   import Send from "@lucide/svelte/icons/send";
   import ArrowLeft from "@lucide/svelte/icons/arrow-left";
@@ -131,7 +132,18 @@
     const niveau = parts[1] ?? "?";
     return `${metierName.charAt(0).toUpperCase() + metierName.slice(1)} — Niveau ${niveau}`;
   }
+
+  // Page en ssr = false (voir +page.ts) : ces balises ne sont donc utiles
+  // qu'apres hydratation cote client, pas dans le HTML initial servi aux
+  // robots/crawlers qui n'executent pas JS.
 </script>
+
+<Seo
+  title={prestataire ? `${prestataire.firstname} — Prestataire certifié | Trankyl Academy` : "Prestataire certifié — Trankyl Academy"}
+  description={prestataire
+    ? `${prestataire.firstname} ${prestataire.lastname}, prestataire certifié Trankyl Academy${prestataire.certifications.length ? " (" + prestataire.certifications.join(", ") + ")" : ""}.`
+    : "Profil d'un prestataire certifié Trankyl Academy."}
+/>
 
 <div class="profile-page">
   {#if loading}

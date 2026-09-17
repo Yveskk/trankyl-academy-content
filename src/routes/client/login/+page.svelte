@@ -28,6 +28,10 @@
   }
 </script>
 
+<svelte:head>
+  <meta name="robots" content="noindex, nofollow" />
+</svelte:head>
+
 <div class="auth-split">
   <div class="auth-brand-panel">
     <img class="auth-brand-logo" src="/logo.svg" alt="Trankyl" />

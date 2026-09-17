@@ -27,7 +27,12 @@
       loading = false;
     }
   }
+
 </script>
+
+<svelte:head>
+  <meta name="robots" content="noindex, nofollow" />
+</svelte:head>
 
 <div class="auth-split">
   <div class="auth-brand-panel">

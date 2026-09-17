@@ -12,10 +12,12 @@ IMAGE="trankyldev/trankyl_academy_content_prod"
 # PUBLIC_API_URL est inline au build par SvelteKit ($env/static/public), donc
 # fixe pour l'image prod : pointe vers l'API trankyl-academy-engine en prod.
 API_URL="https://api.academy.trankyl.com/api/v1"
+SITE_URL="https://academy.trankyl.com"
 
-echo "Building $IMAGE:$VERSION (PUBLIC_API_URL=$API_URL)..."
+echo "Building $IMAGE:$VERSION (PUBLIC_API_URL=$API_URL, PUBLIC_SITE_URL=$SITE_URL)..."
 docker build \
   --build-arg PUBLIC_API_URL="$API_URL" \
+  --build-arg PUBLIC_SITE_URL="$SITE_URL" \
   -t "$IMAGE:$VERSION" -t "$IMAGE:latest" \
   -f Dockerfile .
 

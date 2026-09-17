@@ -39,6 +39,7 @@
 
 <svelte:head>
   <title>{cert ? `Certificat — ${certLabel(cert.code)}` : "Certificat"} — Trankyl Academy</title>
+  <meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
 <div class="cert-page">

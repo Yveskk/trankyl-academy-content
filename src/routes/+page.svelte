@@ -13,6 +13,7 @@
   import BookOpen from "@lucide/svelte/icons/book-open";
   import type { Component } from "svelte";
   import { localize } from "$lib/i18n/localize";
+  import Seo from "$lib/components/Seo.svelte";
   import { i18n } from "$lib/stores/locale.svelte";
   import type { PageData } from "./$types";
 
@@ -94,9 +95,10 @@
   };
 </script>
 
-<svelte:head>
-  <title>Trankyl Academy — Formez-vous, faites-vous certifier</title>
-</svelte:head>
+<Seo
+  title="Trankyl Academy — Formez-vous, faites-vous certifier"
+  description="Trankyl Academy forme et certifie les métiers du service à domicile (nounou, aide à domicile, cuisinier, agent d'entretien...) via des micro-modules courts et un curriculum concret, évalué par quiz."
+/>
 
 <section class="home-hero-redesign" aria-label="Presentation de Trankyl Academy">
   <div class="simple-banner">

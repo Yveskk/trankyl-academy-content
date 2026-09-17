@@ -76,6 +76,10 @@
   }
 </script>
 
+<svelte:head>
+  <meta name="robots" content="noindex, nofollow" />
+</svelte:head>
+
 <div class="card auth-card">
   <span class="icon-badge"><KeyRound size={22} /></span>
   <h1 style="margin-top:1rem">Mot de passe oublié</h1>

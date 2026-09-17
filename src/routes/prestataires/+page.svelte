@@ -11,6 +11,7 @@
     type ChatSessionDetail,
   } from "$lib/api/chat";
   import { auth } from "$lib/stores/auth.svelte";
+  import Seo from "$lib/components/Seo.svelte";
   import Bot from "@lucide/svelte/icons/bot";
   import User from "@lucide/svelte/icons/user";
   import Send from "@lucide/svelte/icons/send";
@@ -172,6 +173,12 @@ Je suis là pour vous aider à trouver le bon prestataire certifié. Décrivez-m
 
   const messages = $derived(currentSession?.messages ?? []);
 </script>
+
+<Seo
+  title="Assistant de mise en relation — Trankyl Academy"
+  description="Discutez avec l'assistant Trankyl Academy pour trouver le bon prestataire certifié."
+  noindex
+/>
 
 <div class="chat-layout" class:no-sidebar={auth.role !== "client"}>
   <!-- Sidebar -->

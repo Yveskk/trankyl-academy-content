@@ -65,6 +65,7 @@
 
 <svelte:head>
   <title>{module ? `${localize(module.titre, module.titre_en)} — Trankyl Academy` : "Trankyl Academy"}</title>
+  <meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
 {#if data.apiError}

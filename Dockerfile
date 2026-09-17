@@ -13,6 +13,11 @@ COPY . .
 ARG PUBLIC_API_URL=https://api.academy.trankyl.com/api/v1
 ENV PUBLIC_API_URL=$PUBLIC_API_URL
 
+# Meme logique pour l'URL canonique du site, utilisee par le composant Seo
+# (balises canonical/og:url/sitemap).
+ARG PUBLIC_SITE_URL=https://academy.trankyl.com
+ENV PUBLIC_SITE_URL=$PUBLIC_SITE_URL
+
 RUN npm run build
 
 # Production stage

@@ -2,6 +2,7 @@
   import Clock from "@lucide/svelte/icons/clock";
   import BookOpen from "@lucide/svelte/icons/book-open";
   import { localize } from "$lib/i18n/localize";
+  import Seo from "$lib/components/Seo.svelte";
   import { i18n } from "$lib/stores/locale.svelte";
   import type { PageData } from "./$types";
 
@@ -14,9 +15,10 @@
   }
 </script>
 
-<svelte:head>
-  <title>Blog — Trankyl Academy</title>
-</svelte:head>
+<Seo
+  title="Blog"
+  description="Conseils, actualités et ressources sur les métiers du service à domicile : garde d'enfants, aide à domicile, entretien, cuisine — par Trankyl Academy."
+/>
 
 <div class="public-page blog-index">
   <div class="editorial-hero">

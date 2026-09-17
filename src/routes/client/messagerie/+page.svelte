@@ -102,6 +102,10 @@
   });
 </script>
 
+<svelte:head>
+  <meta name="robots" content="noindex, nofollow" />
+</svelte:head>
+
 <div class="messaging-layout">
   <div class="conversations-panel" class:mobile-hide={selectedId !== null}>
     <div class="panel-header">

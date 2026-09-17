@@ -2,6 +2,7 @@
   import Mail from "@lucide/svelte/icons/mail";
   import MessageCircle from "@lucide/svelte/icons/message-circle";
   import ExternalLink from "@lucide/svelte/icons/external-link";
+  import Seo from "$lib/components/Seo.svelte";
   import { i18n } from "$lib/stores/locale.svelte";
 
   let name = $state("");
@@ -16,9 +17,10 @@
   }
 </script>
 
-<svelte:head>
-  <title>Contact — Trankyl Academy</title>
-</svelte:head>
+<Seo
+  title="Contact"
+  description="Contactez l'équipe Trankyl Academy pour toute question sur nos formations, certifications ou notre plateforme de mise en relation avec des prestataires de services à domicile."
+/>
 
 <div class="public-page contact-page">
   <div class="editorial-hero contact-hero">

@@ -2,6 +2,7 @@
   import Clock from "@lucide/svelte/icons/clock";
   import ArrowLeft from "@lucide/svelte/icons/arrow-left";
   import { localize, localizeList } from "$lib/i18n/localize";
+  import Seo from "$lib/components/Seo.svelte";
   import { i18n } from "$lib/stores/locale.svelte";
   import type { PageData } from "./$types";
 
@@ -13,10 +14,32 @@
   function formatDate(iso: string) {
     return new Date(iso).toLocaleDateString(dateLocale[i18n.locale], { day: "numeric", month: "long", year: "numeric" });
   }
+
+  let jsonLd = $derived(
+    JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Article",
+      headline: localize(article.title, article.title_en),
+      description: localize(article.excerpt, article.excerpt_en),
+      image: article.cover_image_url ?? undefined,
+      datePublished: article.published_at,
+      dateModified: article.updated_at,
+      author: { "@type": "Organization", name: "Trankyl Academy" },
+      publisher: { "@type": "Organization", name: "Trankyl Academy" },
+      // Echappe les "</" pour eviter qu'un titre/excerpt admin contenant une
+      // fermeture de balise script premature ne casse le rendu de la page.
+    }).replace(/<\//g, "<\\/")
+  );
 </script>
 
+<Seo
+  title={`${localize(article.title, article.title_en)} — Trankyl Academy`}
+  description={localize(article.excerpt, article.excerpt_en)}
+  image={article.cover_image_url ?? undefined}
+  type="article"
+/>
 <svelte:head>
-  <title>{localize(article.title, article.title_en)} — Trankyl Academy</title>
+  {@html `<script type="application/ld+json">${jsonLd}</script>`}
 </svelte:head>
 
 <div class="public-page article-page">

@@ -155,6 +155,10 @@
   });
 </script>
 
+<svelte:head>
+  <meta name="robots" content="noindex, nofollow" />
+</svelte:head>
+
 <div class="messaging-layout">
   <!-- Sidebar conversations -->
   <div class="conversations-panel" class:mobile-hide={selection !== null}>

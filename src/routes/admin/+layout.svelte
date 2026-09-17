@@ -51,6 +51,10 @@
   let currentPath = $derived($page.url.pathname);
 </script>
 
+<svelte:head>
+  <meta name="robots" content="noindex, nofollow" />
+</svelte:head>
+
 {#if auth.role === "admin" && $page.url.pathname !== "/admin/login"}
   <div class="admin-layout">
     {#if sidebarOpen}

@@ -4,6 +4,7 @@
   import { listMetiers } from "$lib/api/taxonomy";
   import type { Metier, Prestataire } from "$lib/api/types";
   import { localize } from "$lib/i18n/localize";
+  import Seo from "$lib/components/Seo.svelte";
   import ArrowLeft from "@lucide/svelte/icons/arrow-left";
   import ArrowRight from "@lucide/svelte/icons/arrow-right";
   import Award from "@lucide/svelte/icons/award";
@@ -51,9 +52,10 @@
   }
 </script>
 
-<svelte:head>
-  <title>Prestataires certifiés — Trankyl Academy</title>
-</svelte:head>
+<Seo
+  title="Prestataires certifiés"
+  description="Trouvez un prestataire certifié Trankyl Academy près de chez vous : nounous, aides à domicile, cuisiniers, agents d'entretien formés et évalués."
+/>
 
 <div class="public-page liste-page">
   <a class="back-link" href="/prestataires"><ArrowLeft size={15} /> Retour au chat SITA</a>

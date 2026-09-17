@@ -3,12 +3,14 @@
   import ShieldCheck from "@lucide/svelte/icons/shield-check";
   import Users from "@lucide/svelte/icons/users";
   import BookOpen from "@lucide/svelte/icons/book-open";
+  import Seo from "$lib/components/Seo.svelte";
   import { i18n } from "$lib/stores/locale.svelte";
 </script>
 
-<svelte:head>
-  <title>A propos — Trankyl Academy</title>
-</svelte:head>
+<Seo
+  title="À propos"
+  description="Trankyl Academy transforme le savoir-faire informel des métiers du service à domicile en taxonomie de compétences et curriculum de micro-certification évalué."
+/>
 
 <div class="public-page about-page">
   <div class="editorial-hero about-hero">

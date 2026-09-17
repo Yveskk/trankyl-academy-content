@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /login
+Disallow: /register
+Disallow: /client
+Disallow: /messagerie
+Disallow: /mot-de-passe-oublie
+Disallow: /prestataires$
+
+Sitemap: https://academy.trankyl.com/sitemap.xml

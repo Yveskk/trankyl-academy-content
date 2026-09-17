@@ -10,6 +10,7 @@
   import type { MetierDetail, NiveauEnrollment } from "$lib/api/types";
   import { auth } from "$lib/stores/auth.svelte";
   import { localize } from "$lib/i18n/localize";
+  import Seo from "$lib/components/Seo.svelte";
   import { i18n } from "$lib/stores/locale.svelte";
   import { snackbar } from "$lib/stores/snackbar.svelte";
   import type { PageData } from "./$types";
@@ -63,9 +64,13 @@
   }
 </script>
 
-<svelte:head>
-  <title>{data.metier?.nom ?? "Metier"} — Trankyl Academy</title>
-</svelte:head>
+<Seo
+  title={data.metier ? `${localize(data.metier.nom, data.metier.nom_en)} — Trankyl Academy` : "Métier — Trankyl Academy"}
+  description={data.metier
+    ? (localize(data.metier.description ?? "", data.metier.description_en) ||
+        `Formation et certification au métier de ${data.metier.nom} par Trankyl Academy.`)
+    : "Formation et certification aux métiers du service à domicile par Trankyl Academy."}
+/>
 
 {#if data.apiError}
   <p class="alert alert-error">{data.apiError}</p>

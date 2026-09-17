@@ -105,7 +105,26 @@
     const currentPath = $page.url.pathname;
     return exact ? currentPath === pathname : currentPath === pathname || currentPath.startsWith(`${pathname}/`);
   }
+
+  const organizationJsonLd = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "EducationalOrganization",
+    name: "Trankyl Academy",
+    url: "https://academy.trankyl.com",
+    logo: "https://academy.trankyl.com/logo.svg",
+    description:
+      "Trankyl Academy forme et certifie les métiers du service à domicile via une taxonomie de compétences et un curriculum de micro-modules évalués.",
+    sameAs: [
+      "https://www.facebook.com/trankyl/",
+      "https://www.instagram.com/trankyl_me/",
+      "https://www.tiktok.com/@trankyl_me",
+    ],
+  }).replace(/<\//g, "<\\/");
 </script>
+
+<svelte:head>
+  {@html `<script type="application/ld+json">${organizationJsonLd}</script>`}
+</svelte:head>
 
 {#snippet userMenu()}
   {#if auth.profile}
