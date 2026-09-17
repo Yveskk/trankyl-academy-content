@@ -4,4 +4,5 @@ build/
 .env
 .env.*
 !.env.example
+!deploy/.env.prod.example
 vite.config.ts.timestamp-*
