@@ -130,7 +130,17 @@ export interface Apprenant {
   lastname: string;
   email: string;
   phone: string | null;
-  created_at: string;
+  created_at: string | null;
+}
+
+export interface TrustScore {
+  apprenant_id: number;
+  score_pct: number;
+  rules_score: number;
+  rules_breakdown: Record<string, unknown>;
+  llm_score: number | null;
+  justification: string;
+  computed_at: string;
 }
 
 export type ContactRequestStatus = "pending" | "approved" | "rejected";
@@ -160,7 +170,7 @@ export interface ContactRequestAdmin extends ContactRequestBase {
   client_nom: string;
   client_email: string;
   client_phone: string | null;
-  client_created_at: string;
+  client_created_at: string | null;
   client_total_requests: number;
 
   prestataire_nom: string;
@@ -169,7 +179,7 @@ export interface ContactRequestAdmin extends ContactRequestBase {
   prestataire_is_verified: boolean;
   prestataire_trust_score: number | null;
   prestataire_certifications: string[];
-  prestataire_created_at: string;
+  prestataire_created_at: string | null;
 
   message_count: number;
   last_message_at: string | null;
@@ -271,30 +281,26 @@ export interface ContentSection {
 
 export interface BlogArticle {
   id: number;
-  slug: string;
-  title: string;
-  excerpt: string;
-  category: string;
-  title_en: string | null;
-  excerpt_en: string | null;
-  category_en: string | null;
-  read_time: string;
-  cover: "green" | "gold";
+  title: string | null;
+  excerpt: string | null;
+  category: string | null;
   cover_image_url: string | null;
-  published_at: string;
-  is_active: boolean;
-  updated_at: string;
+  event_start_date: string | null;
+  event_end_date: string | null;
+  is_active: boolean | null;
+  published_at: string | null;
+  updated_at: string | null;
 }
 
 export interface BlogArticleDetail extends BlogArticle {
   content: string[];
-  content_en: string[] | null;
 }
 
 export interface Banner {
   id: number;
   ordre: number;
   image_url: string;
+  image_url_mobile: string | null;
   is_active: boolean;
   updated_at: string;
 }
@@ -305,4 +311,38 @@ export interface Conversation {
   last_message: string;
   last_message_at: string;
   unread_count: number;
+}
+
+export interface MetierStat {
+  metier_code: string;
+  metier_nom: string;
+  metier_nom_en: string | null;
+  certified_count: number;
+}
+
+export interface NiveauStat {
+  metier_code: string;
+  metier_nom: string;
+  niveau_numero: number;
+  certifications_count: number;
+}
+
+export interface GenreStat {
+  genre: string;
+  count: number;
+}
+
+export interface PublicImpactStats {
+  total_apprenants: number;
+  total_reservations: number;
+  total_modules_completed: number;
+  total_certifications: number;
+  certifications_par_niveau: NiveauStat[];
+  repartition_par_metier: MetierStat[];
+  taux_completion_moyen_pct: number | null;
+  profils_verifies: number;
+  score_confiance_moyen: number | null;
+  pct_profils_bloques_verification: number | null;
+  nombre_villes: number;
+  repartition_genre: GenreStat[];
 }

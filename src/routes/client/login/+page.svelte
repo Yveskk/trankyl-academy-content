@@ -6,22 +6,24 @@
   import { goto } from "$app/navigation";
   import { loginClient } from "$lib/api/auth";
   import { auth } from "$lib/stores/auth.svelte";
+  import { snackbar } from "$lib/stores/snackbar.svelte";
+  import PhoneField from "$lib/components/PhoneField.svelte";
 
-  let email = $state("");
+  let countryCode = $state("228");
+  let phone = $state("");
   let password = $state("");
-  let error = $state<string | null>(null);
   let loading = $state(false);
 
   async function handleSubmit(event: SubmitEvent) {
     event.preventDefault();
-    error = null;
     loading = true;
     try {
-      const token = await loginClient(email, password);
+      const token = await loginClient(`+${countryCode}${phone}`, password);
       auth.login(token.access_token, "client");
-      goto("/prestataires");
+      snackbar.success("Connexion réussie.");
+      await goto("/prestataires");
     } catch (e) {
-      error = (e as Error).message;
+      snackbar.error((e as Error).message);
     } finally {
       loading = false;
     }
@@ -52,10 +54,7 @@
     <p class="muted">Accédez à votre espace pour trouver un prestataire.</p>
 
     <form onsubmit={handleSubmit}>
-      <div class="field">
-        <label for="email">Email</label>
-        <input id="email" type="email" bind:value={email} required />
-      </div>
+      <PhoneField bind:countryCode bind:phone label="Téléphone" />
       <div class="field">
         <label for="password">Mot de passe</label>
         <input id="password" type="password" bind:value={password} required />
@@ -65,7 +64,6 @@
       </button>
     </form>
 
-    {#if error}<p class="alert alert-error">{error}</p>{/if}
     <p class="form-footer muted">Pas encore de compte ? <a href="/client/register">Inscrivez-vous</a></p>
     <p class="form-footer muted"><a href="/mot-de-passe-oublie?role=client">Mot de passe oublié ?</a></p>
   </div>

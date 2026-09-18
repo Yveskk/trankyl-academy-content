@@ -12,11 +12,14 @@ export function adminListBanners() {
   return api.get<Banner[]>("/banners/admin");
 }
 
-export function createBanner(payload: { ordre: number; image_url: string }) {
+export function createBanner(payload: { ordre: number; image_url: string; image_url_mobile?: string | null }) {
   return api.post<Banner>("/banners", payload);
 }
 
-export function updateBanner(id: number, payload: { ordre: number; image_url: string; is_active: boolean }) {
+export function updateBanner(
+  id: number,
+  payload: { ordre: number; image_url: string; image_url_mobile?: string | null; is_active: boolean }
+) {
   return api.put<Banner>(`/banners/${id}`, payload);
 }
 

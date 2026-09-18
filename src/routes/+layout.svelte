@@ -174,14 +174,14 @@
         {#if mobileMenuOpen}<X size={22} />{:else}<Menu size={22} />{/if}
       </button> -->
     {:else}
-      <a class="brand" href="/">
+      <a class="brand" href="https://trankyl.com/">
         <img class="brand-logo" src="/logo.svg" alt="Trankyl Academy" />
       </a>
       <nav>
+        <a href="https://trankyl.com/">{i18n.dict.nav.accueil}</a>
         <a href="/" class:active={isActive("/", true)}>{i18n.dict.nav.metiers}</a>
         <a href="/prestataires" class:active={isActive("/prestataires")}>{i18n.dict.nav.prestataires}</a>
         <a href="/blog" class:active={isActive("/blog")}>{i18n.dict.nav.blog}</a>
-        <a href="/a-propos" class:active={isActive("/a-propos")}>{i18n.dict.nav.aPropos}</a>
         <span class="nav-divider"></span>
         {#if auth.role === "apprenant"}
           <a href="/dashboard" class:active={isActive("/dashboard")}>{i18n.dict.nav.monEspace}</a>
@@ -218,10 +218,10 @@
       <a href="/" class:active={isActive("/", true)} onclick={closeMobileMenu}><ExternalLink size={16} /> Voir le site public</a>
       <button type="button" onclick={logout}>Deconnexion</button>
     {:else}
+      <a href="https://trankyl.com/" onclick={closeMobileMenu}>{i18n.dict.nav.accueil}</a>
       <a href="/" class:active={isActive("/", true)} onclick={closeMobileMenu}>{i18n.dict.nav.metiers}</a>
       <a href="/prestataires" class:active={isActive("/prestataires")} onclick={closeMobileMenu}>{i18n.dict.nav.prestataires}</a>
       <a href="/blog" class:active={isActive("/blog")} onclick={closeMobileMenu}>{i18n.dict.nav.blog}</a>
-      <a href="/a-propos" class:active={isActive("/a-propos")} onclick={closeMobileMenu}>{i18n.dict.nav.aPropos}</a>
       {#if auth.role === "apprenant"}
         {#if auth.profile}
           <button type="button" class="mobile-user-chip" aria-expanded={userMenuOpen} onclick={toggleUserMenu}>

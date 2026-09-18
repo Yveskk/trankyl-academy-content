@@ -14,6 +14,7 @@
   import type { Component } from "svelte";
   import { localize } from "$lib/i18n/localize";
   import Seo from "$lib/components/Seo.svelte";
+  import OrientationWidget from "$lib/components/OrientationWidget.svelte";
   import { i18n } from "$lib/stores/locale.svelte";
   import type { PageData } from "./$types";
 
@@ -24,24 +25,29 @@
 
   // Image par defaut de chaque slide (ordre 1/2/3) : utilisee tant que
   // l'admin n'a pas uploade de banniere active pour ce slot.
-  const defaultSlideImages: Record<number, { image: string; alt: string }> = {
+  const defaultSlideImages: Record<number, { image: string; imageMobile: string | null; alt: string }> = {
     1: {
       image: "https://images.unsplash.com/photo-1504159506876-f8338247a14a?auto=format&fit=crop&w=1200&q=85",
+      imageMobile: null,
       alt: "Une maman africaine partage un moment avec ses enfants",
     },
     2: {
       image: "https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=1200&q=85",
+      imageMobile: null,
       alt: "Une maman accompagne son enfant dans ses apprentissages",
     },
     3: {
       image: "https://images.unsplash.com/photo-1542810634-71277d95dcbb?auto=format&fit=crop&w=1200&q=85",
+      imageMobile: null,
       alt: "Des enfants apprennent et grandissent ensemble",
     },
   };
 
-  function slideImage(ordre: number): { image: string; alt: string } {
+  function slideImage(ordre: number): { image: string; imageMobile: string | null; alt: string } {
     const banner = data.banners.find((b) => b.ordre === ordre);
-    return banner ? { image: banner.image_url, alt: defaultSlideImages[ordre].alt } : defaultSlideImages[ordre];
+    return banner
+      ? { image: banner.image_url, imageMobile: banner.image_url_mobile, alt: defaultSlideImages[ordre].alt }
+      : defaultSlideImages[ordre];
   }
 
   let slides = $derived([
@@ -104,7 +110,10 @@
   <div class="simple-banner">
     {#each slides as slide, index}
       <article class="banner-slide" class:active={activeSlide === index} aria-hidden={activeSlide !== index}>
-        <img src={slide.image} alt={slide.alt} />
+        <picture>
+          {#if slide.imageMobile}<source media="(max-width: 640px)" srcset={slide.imageMobile} />{/if}
+          <img src={slide.image} alt={slide.alt} />
+        </picture>
         <div class="banner-overlay"></div>
         <div class="banner-content">
           <span class="banner-eyebrow">{slide.eyebrow}</span>
@@ -198,18 +207,18 @@
     </div>
     <div class="grid-cards">
       {#each data.articles.slice(0, 3) as article}
-        <a class="blog-card" href="/blog/{article.slug}">
-          <div class="blog-cover" class:alt={article.cover === "gold"} class:has-image={!!article.cover_image_url}>
-            {#if article.cover_image_url}
+        <a class="blog-card" href="/blog/{article.id}">
+          <div class="blog-cover" class:has-image={!!article.cover_image_url && article.cover_image_url.startsWith("http")}>
+            {#if article.cover_image_url && article.cover_image_url.startsWith("http")}
               <img src={article.cover_image_url} alt="" />
             {:else}
               <BookOpen size={28} />
             {/if}
           </div>
           <div class="blog-card-body">
-            <span class="badge badge-green">{localize(article.category, article.category_en)}</span>
-            <h3>{localize(article.title, article.title_en)}</h3>
-            <p class="muted">{localize(article.excerpt, article.excerpt_en)}</p>
+            {#if article.category}<span class="badge badge-green">{article.category}</span>{/if}
+            <h3>{article.title}</h3>
+            <p class="muted">{article.excerpt}</p>
           </div>
         </a>
       {/each}
@@ -222,7 +231,9 @@
     <p>{i18n.dict.home.ctaText}</p>
     <div class="cta-actions">
       <a class="btn btn-gold btn-lg" href="/register">{i18n.dict.home.ctaSignup}</a>
-      <a class="btn btn-outline-light btn-lg" href="/a-propos">{i18n.dict.home.ctaLearnMore}</a>
+      <a class="btn btn-outline-light btn-lg" href="/impact">{i18n.dict.home.ctaLearnMore}</a>
     </div>
   </section>
 {/if}
+
+<OrientationWidget />

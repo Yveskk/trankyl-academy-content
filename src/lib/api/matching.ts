@@ -6,6 +6,7 @@ import type {
   Conversation,
   Prestataire,
   ApprenantDetail,
+  TrustScore,
 } from "./types";
 
 // --- Matching ---
@@ -46,4 +47,11 @@ export function unreadCount() {
 // --- Admin: Apprenants ---
 export function listApprenants() {
   return api.get<ApprenantDetail[]>("/matching/admin/apprenants");
+}
+
+export function updateApprenantVerification(
+  apprenantId: number,
+  payload: { is_verified?: boolean; reference_notes?: string }
+) {
+  return api.patch<TrustScore>(`/matching/admin/apprenants/${apprenantId}/verification`, payload);
 }

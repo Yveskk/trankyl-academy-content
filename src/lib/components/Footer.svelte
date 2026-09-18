@@ -54,7 +54,7 @@
         <h4>{i18n.dict.footer.ressourcesHeading}</h4>
         <ul>
           <li><a href="/blog">{i18n.dict.footer.blog}</a></li>
-          <li><a href="/a-propos">{i18n.dict.footer.aPropos}</a></li>
+          <li><a href="/impact">{i18n.dict.footer.impact}</a></li>
           <li><a href="/contact">{i18n.dict.footer.contact}</a></li>
         </ul>
       </div>

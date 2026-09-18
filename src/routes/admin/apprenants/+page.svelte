@@ -1,15 +1,19 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { listApprenants } from "$lib/api/matching";
+  import { listApprenants, updateApprenantVerification } from "$lib/api/matching";
+  import { snackbar } from "$lib/stores/snackbar.svelte";
   import type { ApprenantDetail } from "$lib/api/types";
   import Award from "@lucide/svelte/icons/award";
   import BookOpen from "@lucide/svelte/icons/book-open";
   import CircleCheck from "@lucide/svelte/icons/circle-check";
   import Users from "@lucide/svelte/icons/users";
+  import ShieldCheck from "@lucide/svelte/icons/shield-check";
+  import ShieldOff from "@lucide/svelte/icons/shield-off";
 
   let apprenants = $state<ApprenantDetail[]>([]);
   let loading = $state(true);
   let error = $state<string | null>(null);
+  let verifyingId = $state<number | null>(null);
 
   onMount(() => {
     listApprenants()
@@ -23,6 +27,29 @@
     certified: apprenants.filter((a) => a.certifications.length > 0).length,
     inProgress: apprenants.filter((a) => a.enrollment_count > 0 && a.completed_count === 0).length,
   });
+
+  function formatDate(iso: string | null) {
+    return iso ? new Date(iso).toLocaleDateString("fr-FR") : "—";
+  }
+
+  async function toggleVerification(a: ApprenantDetail) {
+    verifyingId = a.id;
+    try {
+      const trust = await updateApprenantVerification(a.id, { is_verified: !a.is_verified });
+      apprenants = apprenants.map((x) =>
+        x.id === a.id ? { ...x, is_verified: !a.is_verified, trust_score: trust.score_pct } : x
+      );
+      snackbar.success(
+        !a.is_verified
+          ? `${a.firstname} ${a.lastname} est maintenant vérifié(e) et visible publiquement (score de confiance : ${trust.score_pct}/100).`
+          : `${a.firstname} ${a.lastname} n'est plus vérifié(e) — retiré(e) des recherches publiques.`
+      );
+    } catch (e) {
+      snackbar.error((e as Error).message);
+    } finally {
+      verifyingId = null;
+    }
+  }
 </script>
 
 <div class="learners-page">
@@ -65,6 +92,7 @@
             <th>Inscriptions</th>
             <th>Terminés</th>
             <th>Certifications</th>
+            <th>Statut</th>
             <th>Inscrit le</th>
           </tr>
         </thead>
@@ -87,7 +115,25 @@
                   <span class="muted">Aucune</span>
                 {/if}
               </td>
-              <td class="date-cell">{new Date(a.created_at).toLocaleDateString("fr-FR")}</td>
+              <td>
+                <div class="status-cell">
+                  {#if a.is_verified}
+                    <span class="badge-green"><ShieldCheck size={11} /> Vérifié{a.trust_score !== null ? ` (${a.trust_score}/100)` : ""}</span>
+                  {:else}
+                    <span class="badge-muted"><ShieldOff size={11} /> Non vérifié</span>
+                  {/if}
+                  <button
+                    type="button"
+                    class="verify-btn"
+                    class:danger={a.is_verified}
+                    disabled={verifyingId === a.id}
+                    onclick={() => toggleVerification(a)}
+                  >
+                    {#if verifyingId === a.id}...{:else if a.is_verified}Retirer{:else}Vérifier{/if}
+                  </button>
+                </div>
+              </td>
+              <td class="date-cell">{formatDate(a.created_at)}</td>
             </tr>
           {/each}
         </tbody>
@@ -120,6 +166,12 @@
   .badge-green { display: inline-flex; align-items: center; font-size: 0.75rem; font-weight: 600; padding: 0.15rem 0.5rem; border-radius: 6px; background: #ecfdf5; color: #047857; }
   .badge-gold { display: inline-flex; align-items: center; gap: 0.2rem; font-size: 0.72rem; font-weight: 600; padding: 0.15rem 0.5rem; border-radius: 6px; background: #fff3cd; color: #8a6800; }
   .muted { color: #9ca3af; font-size: 0.82rem; }
+  .status-cell { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+  .verify-btn { font-size: 0.75rem; font-weight: 600; padding: 0.25rem 0.6rem; border-radius: 6px; border: 1px solid #047857; background: #fff; color: #047857; cursor: pointer; }
+  .verify-btn:hover { background: #ecfdf5; }
+  .verify-btn.danger { border-color: #dc2626; color: #dc2626; }
+  .verify-btn.danger:hover { background: #fef2f2; }
+  .verify-btn:disabled { opacity: 0.6; cursor: default; }
   .alert-error { padding: 0.7rem 1rem; border-radius: 8px; background: #fef2f2; color: #991b1b; font-size: 0.85rem; font-weight: 600; border: 1px solid #fecaca; }
   .loading-state, .empty-state { text-align: center; padding: 2rem; color: #6b7280; font-size: 0.9rem; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; }
   @media (max-width: 900px) { .stats-row { grid-template-columns: 1fr; } .table-card { overflow-x: auto; } }

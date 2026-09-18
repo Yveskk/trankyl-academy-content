@@ -7,27 +7,28 @@
   import { login } from "$lib/api/auth";
   import { auth } from "$lib/stores/auth.svelte";
   import { i18n } from "$lib/stores/locale.svelte";
+  import { snackbar } from "$lib/stores/snackbar.svelte";
+  import PhoneField from "$lib/components/PhoneField.svelte";
 
-  let email = $state("");
+  let countryCode = $state("228");
+  let phone = $state("");
   let password = $state("");
-  let error = $state<string | null>(null);
   let loading = $state(false);
 
   async function handleSubmit(event: SubmitEvent) {
     event.preventDefault();
-    error = null;
     loading = true;
     try {
-      const token = await login(email, password);
+      const token = await login(`+${countryCode}${phone}`, password);
       auth.login(token.access_token, "apprenant");
-      goto("/dashboard");
+      snackbar.success("Connexion réussie.");
+      await goto("/dashboard");
     } catch (e) {
-      error = (e as Error).message;
+      snackbar.error((e as Error).message);
     } finally {
       loading = false;
     }
   }
-
 </script>
 
 <svelte:head>
@@ -54,10 +55,7 @@
     <p class="muted">{i18n.dict.login.subtitle}</p>
 
     <form onsubmit={handleSubmit}>
-      <div class="field">
-        <label for="email">{i18n.dict.login.email}</label>
-        <input id="email" type="email" bind:value={email} required />
-      </div>
+      <PhoneField bind:countryCode bind:phone label={i18n.dict.login.phone} />
       <div class="field">
         <label for="password">{i18n.dict.login.password}</label>
         <input id="password" type="password" bind:value={password} required />
@@ -67,7 +65,6 @@
       </button>
     </form>
 
-    {#if error}<p class="alert alert-error">{error}</p>{/if}
     <p class="form-footer muted">{i18n.dict.login.noAccount} <a href="/register">{i18n.dict.login.signUp}</a></p>
     <p class="form-footer muted"><a href="/mot-de-passe-oublie?role=apprenant">{i18n.dict.login.forgotPassword}</a></p>
   </div>

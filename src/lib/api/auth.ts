@@ -11,13 +11,13 @@ export function register(payload: {
   lastname: string;
   email: string;
   password: string;
-  phone?: string;
+  phone: string;
 }) {
   return api.post<Apprenant>("/auth/register", payload);
 }
 
-export function login(email: string, password: string) {
-  return api.post<Token>("/auth/login", { email, password });
+export function login(phone: string, password: string) {
+  return api.post<Token>("/auth/login", { phone, password });
 }
 
 export function me() {
@@ -33,13 +33,13 @@ export function registerClient(payload: {
   lastname: string;
   email: string;
   password: string;
-  phone?: string;
+  phone: string;
 }) {
   return api.post<Client>("/auth/client/register", payload);
 }
 
-export function loginClient(email: string, password: string) {
-  return api.post<Token>("/auth/client/login", { email, password });
+export function loginClient(phone: string, password: string) {
+  return api.post<Token>("/auth/client/login", { phone, password });
 }
 
 export function meClient() {

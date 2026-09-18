@@ -2,10 +2,10 @@
 // sont typees contre la forme exacte de cet objet (voir `Dictionary`).
 export const fr = {
   nav: {
-    metiers: "Métiers",
-    prestataires: "Prestataires",
+    accueil: "Accueil",
+    metiers: "Formations",
+    prestataires: "Trouver un prestataire",
     blog: "Blog",
-    aPropos: "À propos",
     monEspace: "Mon espace",
     messagerie: "Messagerie",
     connexion: "Connexion",
@@ -24,7 +24,7 @@ export const fr = {
     monEspace: "Mon espace",
     ressourcesHeading: "Ressources",
     blog: "Blog",
-    aPropos: "À propos",
+    impact: "Notre impact",
     contact: "Contact",
     trankylHeading: "Trankyl",
     trankylSite: "Trankyl.com",
@@ -88,7 +88,7 @@ export const fr = {
   login: {
     title: "Connexion",
     subtitle: "Accédez à votre espace apprenant.",
-    email: "Email",
+    phone: "Téléphone",
     password: "Mot de passe",
     submitLoading: "Connexion...",
     submit: "Se connecter",
@@ -107,7 +107,7 @@ export const fr = {
     firstname: "Prénom",
     lastname: "Nom",
     email: "Email",
-    phone: "Téléphone (optionnel)",
+    phone: "Téléphone",
     password: "Mot de passe",
     submitLoading: "Création...",
     submit: "Créer mon compte",
@@ -116,33 +116,6 @@ export const fr = {
     value1: "Modules courts de 2 à 3 heures",
     value2: "Micro-certifications reconnues par Trankyl",
     value3: "Un premier pas vers devenir prestataire Trankyl",
-  },
-  aPropos: {
-    eyebrow: "À propos de nous",
-    title: "Former, valider, faire confiance.",
-    intro:
-      "Trankyl Academy transforme le savoir-faire des métiers du quotidien en compétences claires, accessibles et vérifiables.",
-    missionTitle: "Notre mission",
-    missionText:
-      "« Une bonne nounou, c'est quelqu'un qui... » — ce genre de savoir reste souvent informel, transmis oralement, difficile à vérifier. Nous le transformons en taxonomie de compétences écrite, hiérarchisée par niveau, et en curriculum concret de micro-modules courts (2 à 3h) avec évaluation.",
-    linkTitle: "Notre lien avec Trankyl",
-    linkText:
-      "Trankyl Academy est une plateforme indépendante : son propre backend, son propre site, sa propre base de données. Dès qu'un apprenant valide un niveau, il devient prestataire Trankyl et peut être mis en relation avec des clients sur la marketplace — la certification active directement l'activité, elle n'est pas une étape séparée.",
-    principlesEyebrow: "Nos principes",
-    principlesTitle: "Une formation pensée pour être suivie jusqu'au bout",
-    credit1Title: "Des crédits empilables",
-    credit1Text:
-      "Pas de diplôme global d'un coup : chaque module réussi donne un crédit précis, qui s'additionne aux autres jusqu'à la certification de niveau.",
-    credit2Title: "Accessible à tous les rythmes",
-    credit2Text:
-      "2 à 3 heures par module, pour que suivre une formation reste possible même avec un emploi du temps chargé ou irrégulier.",
-    credit3Title: "Un contenu ouvert",
-    credit3Text:
-      "Taxonomie et curriculum sont publiés sous licence CC-BY-4.0 : librement réutilisables, à condition de nous citer comme source.",
-    ctaTitle: "Envie de vous former ?",
-    ctaText: "Parcourez les métiers disponibles et commencez par le premier module.",
-    ctaMetiers: "Voir les métiers",
-    ctaSignup: "Créer un compte",
   },
   contact: {
     eyebrow: "Parlons-en",
@@ -168,7 +141,6 @@ export const fr = {
     intro:
       "Des idées utiles pour apprendre un métier, progresser avec confiance et comprendre comment Trankyl Academy fonctionne.",
     tousLesArticles: "Tous les articles",
-    lecture: "Lecture",
   },
   dashboard: {
     title: "Mon espace",
@@ -190,6 +162,33 @@ export const fr = {
     noCertifications: "Aucune certification obtenue pour le moment.",
     obtainedOn: (date: string) => `obtenue le ${date}`,
     viewCertificate: "Voir le certificat →",
+  },
+  impact: {
+    title: "Notre impact",
+    subtitle:
+      "Des chiffres réels, à jour en direct depuis notre base de données — aucune donnée n'est arrondie ou embellie.",
+    loading: "Chargement des chiffres...",
+    error: "Impossible de charger les statistiques pour le moment.",
+    heroKicker: "En chiffres, mis à jour en direct",
+    formationTitle: "Formation",
+    statTotalApprenants: "Apprenants inscrits",
+    statTotalReservations: "Missions réelles accomplies par nos prestataires certifiés",
+    statModulesCompleted: "Modules complétés",
+    statTotalCertifications: "Certifications de niveau obtenues",
+    statCompletionRate: "Taux de complétion moyen",
+    completionRateNoData: "Pas encore de modules commencés",
+    certificationsByNiveauTitle: "Certifications par métier et par niveau",
+    repartitionMetierTitle: "Répartition par métier",
+    niveauLabel: (n: number) => `Niveau ${n}`,
+    trustTitle: "Confiance & sécurité",
+    trustIntro: "Notre système de vérification n'est pas théorique : ces chiffres montrent qu'il filtre réellement.",
+    statProfilsVerifies: "Profils avec vérification d'antécédents validée",
+    statScoreConfiance: "Score de confiance moyen des profils actifs",
+    scoreNoData: "Pas encore de score calculé",
+    statPctBloques: "des profils certifiés sont encore bloqués faute de vérification",
+    reachTitle: "Portée",
+    statVilles: "Ville(s) / région(s) couverte(s)",
+    statGenre: "Répartition parmi les apprenants",
   },
 };
 

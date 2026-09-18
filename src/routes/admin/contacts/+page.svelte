@@ -56,7 +56,8 @@
     return new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
   }
 
-  function formatDateShort(iso: string) {
+  function formatDateShort(iso: string | null) {
+    if (!iso) return "date inconnue";
     return new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
   }
 </script>

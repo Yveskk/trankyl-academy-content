@@ -4,8 +4,12 @@ import { getArticle } from "$lib/api/blog";
 import type { PageLoad } from "./$types";
 
 export const load: PageLoad = async ({ params }) => {
+  const id = Number(params.id);
+  if (!Number.isInteger(id)) {
+    error(404, "Article introuvable");
+  }
   try {
-    const article = await getArticle(params.slug);
+    const article = await getArticle(id);
     return { article };
   } catch (e) {
     if (e instanceof ApiError && e.status === 404) {

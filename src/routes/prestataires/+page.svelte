@@ -11,6 +11,7 @@
     type ChatSessionDetail,
   } from "$lib/api/chat";
   import { auth } from "$lib/stores/auth.svelte";
+  import { renderChatMarkdown } from "$lib/utils/chatMarkdown";
   import Seo from "$lib/components/Seo.svelte";
   import Bot from "@lucide/svelte/icons/bot";
   import User from "@lucide/svelte/icons/user";
@@ -139,38 +140,6 @@ Je suis là pour vous aider à trouver le bon prestataire certifié. Décrivez-m
     }
   }
 
-  function escapeHtml(text: string): string {
-    return text
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#39;");
-  }
-
-  function isSafeButtonUrl(url: string): boolean {
-    // N'autorise que les liens internes ou http(s) explicites — bloque
-    // javascript:/data: et autres schemas exploitables dans un onclick.
-    return /^\//.test(url) || /^https?:\/\//i.test(url);
-  }
-
-  function renderMarkdown(text: string): string {
-    // Le message peut venir d'un utilisateur (son propre texte) ou de SITA,
-    // qui peut lui-meme citer des donnees issues de la base (nom d'un
-    // apprenant, description d'un metier...). On echappe TOUJOURS le HTML en
-    // premier avant d'appliquer le mini-markdown, pour eviter une injection
-    // XSS stockee via {@html} plus bas.
-    const escaped = escapeHtml(text);
-    let html = escaped
-      .replace(/\[btn:(.+?):(.+?)\]/g, (_match, label: string, url: string) =>
-        isSafeButtonUrl(url) ? `<a href="${url}" class="chat-btn">${label}</a>` : label
-      )
-      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-      .replace(/\*(.*?)\*/g, "<em>$1</em>")
-      .replace(/\n/g, "<br>");
-    return html;
-  }
-
   const messages = $derived(currentSession?.messages ?? []);
 </script>
 
@@ -257,7 +226,7 @@ Je suis là pour vous aider à trouver le bon prestataire certifié. Décrivez-m
                 {#if msg.role === "assistant"}<Bot size={16} />{:else}<User size={16} />{/if}
               </div>
               <div class="msg-bubble">
-                {@html renderMarkdown(msg.content)}
+                {@html renderChatMarkdown(msg.content)}
               </div>
             </div>
           {/each}

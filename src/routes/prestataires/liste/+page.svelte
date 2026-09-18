@@ -23,6 +23,11 @@
     } catch {
       metiers = [];
     }
+    // Par defaut on affiche une seule categorie (pas tous les prestataires
+    // certifies d'un coup) — la personne choisit ensuite via le filtre.
+    if (metiers.length > 0) {
+      selectedMetier = metiers[0].code;
+    }
     await refresh();
   });
 
@@ -44,11 +49,22 @@
     return "#dc2626";
   }
 
-  function certLabel(cert: string): string {
-    const parts = cert.split("_niveau_");
-    const metierName = parts[0]?.replace(/_/g, " ") ?? cert;
-    const niveau = parts[1] ?? "?";
-    return `${metierName.charAt(0).toUpperCase() + metierName.slice(1)} — Niveau ${niveau}`;
+  let metierByCode = $derived(new Map(metiers.map((m) => [m.code, m])));
+
+  function metierCodeFromCert(cert: string): string {
+    return cert.split("_niveau_")[0] ?? cert;
+  }
+
+  // Un client qui parcourt les résultats n'a pas besoin de savoir à quel
+  // niveau précis correspond chaque certification — seulement dans quels
+  // métiers le prestataire est certifié, et combien de certifications il a
+  // en tout (regroupées par métier pour éviter les doublons niveau 1/2/3).
+  function metierChips(p: Prestataire): { code: string; label: string }[] {
+    const codes = [...new Set(p.certifications.map(metierCodeFromCert))];
+    return codes.map((code) => {
+      const m = metierByCode.get(code);
+      return { code, label: m ? localize(m.nom, m.nom_en) : code };
+    });
   }
 </script>
 
@@ -87,9 +103,10 @@
           </a>
 
           <div class="certs">
-            {#each p.certifications as cert}
-              <span class="cert-chip"><Award size={11} />{certLabel(cert)}</span>
+            {#each metierChips(p) as chip (chip.code)}
+              <span class="cert-chip"><Award size={11} />{chip.label}</span>
             {/each}
+            <span class="cert-count">{p.certifications.length} certification{p.certifications.length > 1 ? "s" : ""}</span>
           </div>
 
           <div class="scores">
@@ -158,6 +175,7 @@
   .view-profile { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.76rem; font-weight: 700; color: var(--green-dark); margin-top: 0.15rem; }
   .certs { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.85rem; }
   .cert-chip { display: inline-flex; align-items: center; gap: 0.2rem; font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.5rem; border-radius: 999px; background: #fff3cd; color: #8a6800; }
+  .cert-count { display: inline-flex; align-items: center; font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.5rem; border-radius: 999px; background: #f3f4f6; color: #6b7280; }
 
   .scores { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.9rem; padding-top: 0.9rem; border-top: 1px solid #f3f4f6; flex-wrap: wrap; }
   .score-badge { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.78rem; font-weight: 700; padding: 0.3rem 0.6rem; border-radius: 999px; background: #f3f4f6; border: none; cursor: default; }

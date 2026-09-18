@@ -125,14 +125,6 @@
     }
   }
 
-  function certLabel(cert: string): string {
-    // nounou_niveau_1 -> Nounou — Niveau 1
-    const parts = cert.split("_niveau_");
-    const metierName = parts[0]?.replace(/_/g, " ") ?? cert;
-    const niveau = parts[1] ?? "?";
-    return `${metierName.charAt(0).toUpperCase() + metierName.slice(1)} — Niveau ${niveau}`;
-  }
-
   // Page en ssr = false (voir +page.ts) : ces balises ne sont donc utiles
   // qu'apres hydratation cote client, pas dans le HTML initial servi aux
   // robots/crawlers qui n'executent pas JS.
@@ -141,7 +133,7 @@
 <Seo
   title={prestataire ? `${prestataire.firstname} — Prestataire certifié | Trankyl Academy` : "Prestataire certifié — Trankyl Academy"}
   description={prestataire
-    ? `${prestataire.firstname} ${prestataire.lastname}, prestataire certifié Trankyl Academy${prestataire.certifications.length ? " (" + prestataire.certifications.join(", ") + ")" : ""}.`
+    ? `${prestataire.firstname} ${prestataire.lastname}, prestataire certifié Trankyl Academy${prestataire.certifications.length ? ` (${prestataire.certifications.length} certification${prestataire.certifications.length > 1 ? "s" : ""})` : ""}.`
     : "Profil d'un prestataire certifié Trankyl Academy."}
 />
 
@@ -206,13 +198,13 @@
     <div class="section-card">
       <h2><Award size={18} /> Certifications obtenues</h2>
       {#if prestataire.certifications.length > 0}
+        <p class="cert-total">{prestataire.certifications.length} certification{prestataire.certifications.length > 1 ? "s" : ""} au total</p>
         <div class="cert-grid">
-          {#each prestataire.certifications as cert}
+          {#each metiers as metier (metier.code)}
             <div class="cert-card">
               <Award size={20} class="cert-icon" />
               <div>
-                <span class="cert-name">{certLabel(cert)}</span>
-                <span class="cert-code">{cert}</span>
+                <span class="cert-name">{localize(metier.nom, metier.nom_en)}</span>
               </div>
             </div>
           {/each}
@@ -325,7 +317,7 @@
   .cert-card { display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 1rem; background: #fff3cd; border-radius: 10px; border: 1px solid #fde68a; }
   .cert-card :global(.cert-icon) { color: #d97706; flex-shrink: 0; }
   .cert-name { display: block; font-size: 0.88rem; font-weight: 700; color: #111827; }
-  .cert-code { font-size: 0.72rem; color: #92400e; font-weight: 600; }
+  .cert-total { font-size: 0.82rem; font-weight: 600; color: #6b7280; margin: -0.5rem 0 0.85rem; }
   .metier-section { margin-bottom: 1.25rem; }
   .metier-section h3 { font-size: 0.95rem; font-weight: 700; color: #111827; margin: 0 0 0.5rem; }
   .niveau-row { display: flex; align-items: center; justify-content: space-between; padding: 0.4rem 0; }

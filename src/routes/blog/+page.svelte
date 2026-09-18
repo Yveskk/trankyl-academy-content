@@ -1,7 +1,6 @@
 <script lang="ts">
-  import Clock from "@lucide/svelte/icons/clock";
+  import Calendar from "@lucide/svelte/icons/calendar";
   import BookOpen from "@lucide/svelte/icons/book-open";
-  import { localize } from "$lib/i18n/localize";
   import Seo from "$lib/components/Seo.svelte";
   import { i18n } from "$lib/stores/locale.svelte";
   import type { PageData } from "./$types";
@@ -36,9 +35,9 @@
   {:else}
     <div class="grid-cards section editorial-grid">
       {#each data.articles as article, index}
-        <a class="blog-card" href="/blog/{article.slug}">
-          <div class="blog-cover" class:alt={article.cover === "gold"} class:has-image={!!article.cover_image_url}>
-            {#if article.cover_image_url}
+        <a class="blog-card" href="/blog/{article.id}">
+          <div class="blog-cover" class:has-image={!!article.cover_image_url && article.cover_image_url.startsWith("http")}>
+            {#if article.cover_image_url && article.cover_image_url.startsWith("http")}
               <img src={article.cover_image_url} alt="" />
             {:else}
               <span class="cover-index">0{index + 1}</span>
@@ -46,14 +45,14 @@
             {/if}
           </div>
           <div class="blog-card-body">
-            <span class="badge badge-green">{localize(article.category, article.category_en)}</span>
-            <h3>{localize(article.title, article.title_en)}</h3>
-            <p class="muted">{localize(article.excerpt, article.excerpt_en)}</p>
-            <div class="blog-meta">
-              <span>{formatDate(article.published_at)}</span>
-              <span>&middot;</span>
-              <span class="row" style="gap:.25rem"><Clock size={13} />{article.read_time}</span>
-            </div>
+            {#if article.category}<span class="badge badge-green">{article.category}</span>{/if}
+            <h3>{article.title}</h3>
+            <p class="muted">{article.excerpt}</p>
+            {#if article.published_at}
+              <div class="blog-meta">
+                <span class="row" style="gap:.25rem"><Calendar size={13} />{formatDate(article.published_at)}</span>
+              </div>
+            {/if}
           </div>
         </a>
       {/each}

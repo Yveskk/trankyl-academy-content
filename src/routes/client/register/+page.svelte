@@ -6,26 +6,29 @@
   import { goto } from "$app/navigation";
   import { loginClient, registerClient } from "$lib/api/auth";
   import { auth } from "$lib/stores/auth.svelte";
+  import { snackbar } from "$lib/stores/snackbar.svelte";
+  import PhoneField from "$lib/components/PhoneField.svelte";
 
   let firstname = $state("");
   let lastname = $state("");
   let email = $state("");
+  let countryCode = $state("228");
   let phone = $state("");
   let password = $state("");
-  let error = $state<string | null>(null);
   let loading = $state(false);
 
   async function handleSubmit(event: SubmitEvent) {
     event.preventDefault();
-    error = null;
     loading = true;
     try {
-      await registerClient({ firstname, lastname, email, password, phone: phone || undefined });
-      const token = await loginClient(email, password);
+      const fullPhone = `+${countryCode}${phone}`;
+      await registerClient({ firstname, lastname, email, password, phone: fullPhone });
+      const token = await loginClient(fullPhone, password);
       auth.login(token.access_token, "client");
-      goto("/prestataires");
+      snackbar.success("Inscription réussie.");
+      await goto("/prestataires");
     } catch (e) {
-      error = (e as Error).message;
+      snackbar.error((e as Error).message);
     } finally {
       loading = false;
     }
@@ -70,10 +73,7 @@
         <label for="email">Email</label>
         <input id="email" type="email" bind:value={email} required />
       </div>
-      <div class="field">
-        <label for="phone">Téléphone (optionnel)</label>
-        <input id="phone" bind:value={phone} />
-      </div>
+      <PhoneField bind:countryCode bind:phone label="Téléphone" />
       <div class="field">
         <label for="password">Mot de passe</label>
         <input id="password" type="password" bind:value={password} required />
@@ -83,7 +83,6 @@
       </button>
     </form>
 
-    {#if error}<p class="alert alert-error">{error}</p>{/if}
     <p class="form-footer muted">Déjà un compte ? <a href="/client/login">Connectez-vous</a></p>
   </div>
 </div>

@@ -24,7 +24,7 @@ function toXml(urls: UrlEntry[]): string {
 export async function GET() {
   const urls: UrlEntry[] = [
     { loc: `${PUBLIC_SITE_URL}/`, changefreq: "weekly", priority: "1.0" },
-    { loc: `${PUBLIC_SITE_URL}/a-propos`, changefreq: "monthly", priority: "0.5" },
+    { loc: `${PUBLIC_SITE_URL}/impact`, changefreq: "weekly", priority: "0.6" },
     { loc: `${PUBLIC_SITE_URL}/contact`, changefreq: "monthly", priority: "0.5" },
     { loc: `${PUBLIC_SITE_URL}/blog`, changefreq: "weekly", priority: "0.7" },
     { loc: `${PUBLIC_SITE_URL}/prestataires/liste`, changefreq: "weekly", priority: "0.6" },
@@ -46,8 +46,8 @@ export async function GET() {
     for (const article of articles) {
       if (article.is_active) {
         urls.push({
-          loc: `${PUBLIC_SITE_URL}/blog/${article.slug}`,
-          lastmod: article.updated_at,
+          loc: `${PUBLIC_SITE_URL}/blog/${article.id}`,
+          lastmod: article.updated_at ?? undefined,
           changefreq: "monthly",
           priority: "0.6",
         });

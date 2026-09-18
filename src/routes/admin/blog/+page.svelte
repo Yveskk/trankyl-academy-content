@@ -16,19 +16,13 @@
   let loading = $state(true);
 
   const emptyForm = () => ({
-    slug: "",
     title: "",
     excerpt: "",
     category: "",
-    title_en: "",
-    excerpt_en: "",
-    category_en: "",
-    read_time: "3 min",
-    cover: "green" as "green" | "gold",
     cover_image_url: null as string | null,
-    published_at: new Date().toISOString().slice(0, 10),
+    event_start_date: "",
+    event_end_date: "",
     contentText: "",
-    contentTextEn: "",
   });
 
   let showNewForm = $state(false);
@@ -87,19 +81,13 @@
     event.preventDefault();
     try {
       await createArticle({
-        slug: newForm.slug,
         title: newForm.title,
         excerpt: newForm.excerpt,
-        category: newForm.category,
-        title_en: newForm.title_en || undefined,
-        excerpt_en: newForm.excerpt_en || undefined,
-        category_en: newForm.category_en || undefined,
-        read_time: newForm.read_time,
-        cover: newForm.cover,
+        category: newForm.category || null,
         cover_image_url: newForm.cover_image_url,
-        published_at: newForm.published_at,
+        event_start_date: newForm.event_start_date || null,
+        event_end_date: newForm.event_end_date || null,
         content: splitContent(newForm.contentText),
-        content_en: newForm.contentTextEn ? splitContent(newForm.contentTextEn) : undefined,
       });
       newForm = emptyForm();
       showNewForm = false;
@@ -115,19 +103,13 @@
       const detail = await adminGetArticle(article.id);
       editingId = article.id;
       editForm = {
-        slug: detail.slug,
-        title: detail.title,
-        excerpt: detail.excerpt,
-        category: detail.category,
-        title_en: detail.title_en ?? "",
-        excerpt_en: detail.excerpt_en ?? "",
-        category_en: detail.category_en ?? "",
-        read_time: detail.read_time,
-        cover: detail.cover,
+        title: detail.title ?? "",
+        excerpt: detail.excerpt ?? "",
+        category: detail.category ?? "",
         cover_image_url: detail.cover_image_url,
-        published_at: detail.published_at,
+        event_start_date: detail.event_start_date ?? "",
+        event_end_date: detail.event_end_date ?? "",
         contentText: detail.content.join("\n\n"),
-        contentTextEn: detail.content_en ? detail.content_en.join("\n\n") : "",
       };
     } catch (e) {
       snackbar.error((e as Error).message);
@@ -138,20 +120,14 @@
     event.preventDefault();
     try {
       await updateArticle(article.id, {
-        slug: editForm.slug,
         title: editForm.title,
         excerpt: editForm.excerpt,
-        category: editForm.category,
-        title_en: editForm.title_en || undefined,
-        excerpt_en: editForm.excerpt_en || undefined,
-        category_en: editForm.category_en || undefined,
-        read_time: editForm.read_time,
-        cover: editForm.cover,
+        category: editForm.category || null,
         cover_image_url: editForm.cover_image_url,
-        published_at: editForm.published_at,
+        event_start_date: editForm.event_start_date || null,
+        event_end_date: editForm.event_end_date || null,
         content: splitContent(editForm.contentText),
-        content_en: editForm.contentTextEn ? splitContent(editForm.contentTextEn) : undefined,
-        is_active: article.is_active,
+        is_active: article.is_active ?? true,
       });
       editingId = null;
       snackbar.success("Article mis à jour.");
@@ -165,19 +141,13 @@
     try {
       const detail = await adminGetArticle(article.id);
       await updateArticle(article.id, {
-        slug: detail.slug,
-        title: detail.title,
-        excerpt: detail.excerpt,
+        title: detail.title ?? "",
+        excerpt: detail.excerpt ?? "",
         category: detail.category,
-        title_en: detail.title_en ?? undefined,
-        excerpt_en: detail.excerpt_en ?? undefined,
-        category_en: detail.category_en ?? undefined,
-        read_time: detail.read_time,
-        cover: detail.cover,
         cover_image_url: detail.cover_image_url,
-        published_at: detail.published_at,
+        event_start_date: detail.event_start_date,
+        event_end_date: detail.event_end_date,
         content: detail.content,
-        content_en: detail.content_en ?? undefined,
         is_active: !article.is_active,
       });
       snackbar.success(article.is_active ? "Article dépublié." : "Article publié.");
@@ -188,7 +158,7 @@
   }
 
   async function handleDelete(id: number) {
-    if (!confirm("Supprimer cet article ?")) return;
+    if (!confirm("Supprimer cet article ? Il s'agit d'un evenement de la table partagee Trankyl, egalement visible du site principal.")) return;
     try {
       await deleteArticle(id);
       snackbar.success("Article supprimé.");
@@ -198,14 +168,16 @@
     }
   }
 
-  function formatDate(iso: string) {
-    return new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
+  function formatDate(iso: string | null) {
+    return iso ? new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" }) : "—";
   }
 </script>
 
 <div class="blog-admin-page">
   <div class="page-header">
-    <p class="header-desc">Articles du blog public. Un article dépublié reste en base mais disparaît du site.</p>
+    <p class="header-desc">
+      Articles du blog public — table `events`, partagee avec le site principal Trankyl. Un article dépublié reste en base mais disparaît des deux sites.
+    </p>
     <button class="btn-add" onclick={() => (showNewForm = !showNewForm)}>
       <Plus size={16} />
       Nouvel article
@@ -218,52 +190,27 @@
       <form onsubmit={handleCreate}>
         <div class="form-grid">
           <div class="field">
-            <label for="new-title">Titre (FR)</label>
+            <label for="new-title">Titre</label>
             <input id="new-title" bind:value={newForm.title} required />
           </div>
           <div class="field">
-            <label for="new-slug">Slug (URL)</label>
-            <input id="new-slug" placeholder="ex: mon-article" bind:value={newForm.slug} required />
+            <label for="new-category">Catégorie (optionnel)</label>
+            <input id="new-category" placeholder="ex: Challenge Trankyl" bind:value={newForm.category} />
           </div>
         </div>
         <div class="form-grid">
           <div class="field">
-            <label for="new-category">Catégorie (FR)</label>
-            <input id="new-category" placeholder="ex: Pédagogie" bind:value={newForm.category} required />
+            <label for="new-start">Date de début</label>
+            <input id="new-start" type="date" bind:value={newForm.event_start_date} required />
           </div>
           <div class="field">
-            <label for="new-date">Date de publication</label>
-            <input id="new-date" type="date" bind:value={newForm.published_at} required />
-          </div>
-          <div class="field">
-            <label for="new-readtime">Temps de lecture</label>
-            <input id="new-readtime" placeholder="ex: 4 min" bind:value={newForm.read_time} required />
-          </div>
-          <div class="field">
-            <label for="new-cover">Couverture</label>
-            <select id="new-cover" bind:value={newForm.cover}>
-              <option value="green">Vert</option>
-              <option value="gold">Or</option>
-            </select>
+            <label for="new-end">Date de fin (optionnel)</label>
+            <input id="new-end" type="date" bind:value={newForm.event_end_date} />
           </div>
         </div>
         <div class="field">
-          <label for="new-excerpt">Extrait (FR)</label>
+          <label for="new-excerpt">Extrait</label>
           <input id="new-excerpt" bind:value={newForm.excerpt} required />
-        </div>
-        <div class="form-grid">
-          <div class="field">
-            <label for="new-title-en">Title (EN)</label>
-            <input id="new-title-en" bind:value={newForm.title_en} />
-          </div>
-          <div class="field">
-            <label for="new-category-en">Category (EN)</label>
-            <input id="new-category-en" placeholder="e.g. Pedagogy" bind:value={newForm.category_en} />
-          </div>
-        </div>
-        <div class="field">
-          <label for="new-excerpt-en">Excerpt (EN)</label>
-          <input id="new-excerpt-en" bind:value={newForm.excerpt_en} />
         </div>
         <div class="field">
           <span class="field-label">Image de couverture (optionnel)</span>
@@ -288,12 +235,8 @@
           {/if}
         </div>
         <div class="field">
-          <label for="new-content">Contenu (FR) — un paragraphe par bloc, séparés par une ligne vide</label>
+          <label for="new-content">Contenu — un paragraphe par bloc, séparés par une ligne vide</label>
           <textarea id="new-content" rows="8" bind:value={newForm.contentText} required></textarea>
-        </div>
-        <div class="field">
-          <label for="new-content-en">Content (EN) — one paragraph per block, separated by a blank line</label>
-          <textarea id="new-content-en" rows="8" bind:value={newForm.contentTextEn}></textarea>
         </div>
         <div class="form-actions">
           <button class="btn-primary-sm" type="submit">Créer</button>
@@ -324,18 +267,18 @@
             <tr class:inactive-row={!article.is_active}>
               <td>
                 <div class="article-cell">
-                  {#if article.cover_image_url}
+                  {#if article.cover_image_url && article.cover_image_url.startsWith("http")}
                     <img class="article-thumb" src={article.cover_image_url} alt="" />
                   {:else}
-                    <span class="article-thumb placeholder" class:gold={article.cover === "gold"}></span>
+                    <span class="article-thumb placeholder"></span>
                   {/if}
                   <div>
                     <span class="article-title">{article.title}</span>
-                    <span class="article-slug">/blog/{article.slug}</span>
+                    <span class="article-slug">/blog/{article.id}</span>
                   </div>
                 </div>
               </td>
-              <td>{article.category}</td>
+              <td>{article.category ?? "—"}</td>
               <td>{formatDate(article.published_at)}</td>
               <td>
                 <span class="status-pill" class:active={article.is_active}>{article.is_active ? "Publié" : "Dépublié"}</span>
@@ -365,52 +308,27 @@
                   <form class="edit-form" onsubmit={(e) => handleSave(article, e)}>
                     <div class="form-grid">
                       <div class="field">
-                        <label for="edit-title-{article.id}">Titre (FR)</label>
+                        <label for="edit-title-{article.id}">Titre</label>
                         <input id="edit-title-{article.id}" bind:value={editForm.title} required />
                       </div>
                       <div class="field">
-                        <label for="edit-slug-{article.id}">Slug (URL)</label>
-                        <input id="edit-slug-{article.id}" bind:value={editForm.slug} required />
+                        <label for="edit-category-{article.id}">Catégorie (optionnel)</label>
+                        <input id="edit-category-{article.id}" bind:value={editForm.category} />
                       </div>
                     </div>
                     <div class="form-grid">
                       <div class="field">
-                        <label for="edit-category-{article.id}">Catégorie (FR)</label>
-                        <input id="edit-category-{article.id}" bind:value={editForm.category} required />
+                        <label for="edit-start-{article.id}">Date de début</label>
+                        <input id="edit-start-{article.id}" type="date" bind:value={editForm.event_start_date} required />
                       </div>
                       <div class="field">
-                        <label for="edit-date-{article.id}">Date de publication</label>
-                        <input id="edit-date-{article.id}" type="date" bind:value={editForm.published_at} required />
-                      </div>
-                      <div class="field">
-                        <label for="edit-readtime-{article.id}">Temps de lecture</label>
-                        <input id="edit-readtime-{article.id}" bind:value={editForm.read_time} required />
-                      </div>
-                      <div class="field">
-                        <label for="edit-cover-{article.id}">Couverture</label>
-                        <select id="edit-cover-{article.id}" bind:value={editForm.cover}>
-                          <option value="green">Vert</option>
-                          <option value="gold">Or</option>
-                        </select>
+                        <label for="edit-end-{article.id}">Date de fin (optionnel)</label>
+                        <input id="edit-end-{article.id}" type="date" bind:value={editForm.event_end_date} />
                       </div>
                     </div>
                     <div class="field">
-                      <label for="edit-excerpt-{article.id}">Extrait (FR)</label>
+                      <label for="edit-excerpt-{article.id}">Extrait</label>
                       <input id="edit-excerpt-{article.id}" bind:value={editForm.excerpt} required />
-                    </div>
-                    <div class="form-grid">
-                      <div class="field">
-                        <label for="edit-title-en-{article.id}">Title (EN)</label>
-                        <input id="edit-title-en-{article.id}" bind:value={editForm.title_en} />
-                      </div>
-                      <div class="field">
-                        <label for="edit-category-en-{article.id}">Category (EN)</label>
-                        <input id="edit-category-en-{article.id}" bind:value={editForm.category_en} />
-                      </div>
-                    </div>
-                    <div class="field">
-                      <label for="edit-excerpt-en-{article.id}">Excerpt (EN)</label>
-                      <input id="edit-excerpt-en-{article.id}" bind:value={editForm.excerpt_en} />
                     </div>
                     <div class="field">
                       <span class="field-label">Image de couverture (optionnel)</span>
@@ -435,12 +353,8 @@
                       {/if}
                     </div>
                     <div class="field">
-                      <label for="edit-content-{article.id}">Contenu (FR) — un paragraphe par bloc, séparés par une ligne vide</label>
+                      <label for="edit-content-{article.id}">Contenu — un paragraphe par bloc, séparés par une ligne vide</label>
                       <textarea id="edit-content-{article.id}" rows="8" bind:value={editForm.contentText} required></textarea>
-                    </div>
-                    <div class="field">
-                      <label for="edit-content-en-{article.id}">Content (EN) — one paragraph per block, separated by a blank line</label>
-                      <textarea id="edit-content-en-{article.id}" rows="8" bind:value={editForm.contentTextEn}></textarea>
                     </div>
                     <div class="form-actions">
                       <button class="btn-primary-sm" type="submit">Enregistrer</button>
@@ -460,7 +374,7 @@
 <style>
   .blog-admin-page { display: flex; flex-direction: column; gap: 1rem; }
   .page-header { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
-  .header-desc { font-size: 0.85rem; color: #6b7280; margin: 0; }
+  .header-desc { font-size: 0.85rem; color: #6b7280; margin: 0; max-width: 620px; }
   .btn-add { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.55rem 1rem; border: none; border-radius: 8px; background: #03a71a; color: #fff; font-family: inherit; font-weight: 700; font-size: 0.85rem; cursor: pointer; flex-shrink: 0; }
   .btn-add:hover { background: #028a15; }
   .form-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 1.25rem; }
@@ -468,9 +382,9 @@
   .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-bottom: 0.75rem; }
   .field { display: flex; flex-direction: column; gap: 0.3rem; margin-bottom: 0.75rem; }
   label { font-size: 0.78rem; font-weight: 600; color: #374151; }
-  input, select, textarea { font-family: inherit; font-size: 0.88rem; padding: 0.55rem 0.75rem; border: 1.5px solid #d1d5db; border-radius: 8px; background: #f9fafb; color: #111827; transition: all 0.15s; }
+  input, textarea { font-family: inherit; font-size: 0.88rem; padding: 0.55rem 0.75rem; border: 1.5px solid #d1d5db; border-radius: 8px; background: #f9fafb; color: #111827; transition: all 0.15s; }
   textarea { resize: vertical; line-height: 1.5; }
-  input:focus, select:focus, textarea:focus { outline: none; border-color: #03a71a; box-shadow: 0 0 0 2px rgba(3, 167, 26, 0.1); }
+  input:focus, textarea:focus { outline: none; border-color: #03a71a; box-shadow: 0 0 0 2px rgba(3, 167, 26, 0.1); }
   .form-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
   .btn-primary-sm { padding: 0.5rem 1rem; border: none; border-radius: 8px; background: #03a71a; color: #fff; font-family: inherit; font-weight: 700; font-size: 0.82rem; cursor: pointer; }
   .btn-cancel { padding: 0.5rem 1rem; border: 1px solid #d1d5db; border-radius: 8px; background: #fff; color: #374151; font-family: inherit; font-weight: 600; font-size: 0.82rem; cursor: pointer; }
@@ -499,7 +413,6 @@
   .article-cell { display: flex; align-items: center; gap: 0.6rem; }
   .article-thumb { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
   .article-thumb.placeholder { background: linear-gradient(135deg, #03a71a, #028a15); }
-  .article-thumb.placeholder.gold { background: linear-gradient(135deg, #fec600, #d97706); }
 
   .table-wrap { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; overflow-x: auto; }
   .articles-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }

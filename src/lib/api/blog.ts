@@ -5,19 +5,13 @@ import { ApiError, api } from "./client";
 import type { BlogArticle, BlogArticleDetail } from "./types";
 
 export interface BlogArticlePayload {
-  slug: string;
   title: string;
   excerpt: string;
-  category: string;
-  title_en?: string | null;
-  excerpt_en?: string | null;
-  category_en?: string | null;
-  read_time: string;
-  cover: "green" | "gold";
+  category: string | null;
   cover_image_url: string | null;
-  published_at: string;
+  event_start_date: string | null;
+  event_end_date: string | null;
   content: string[];
-  content_en?: string[] | null;
 }
 
 export async function uploadCoverImage(file: File): Promise<{ url: string }> {
@@ -54,8 +48,8 @@ export function listArticles() {
   return api.get<BlogArticle[]>("/blog/articles");
 }
 
-export function getArticle(slug: string) {
-  return api.get<BlogArticleDetail>(`/blog/articles/${slug}`);
+export function getArticle(id: number) {
+  return api.get<BlogArticleDetail>(`/blog/articles/${id}`);
 }
 
 export function adminListArticles() {

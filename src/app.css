@@ -1158,6 +1158,7 @@ body:has(.public-main.app-page) {
   opacity: 1;
 }
 
+.banner-slide picture,
 .banner-slide img,
 .banner-overlay {
   position: absolute;
