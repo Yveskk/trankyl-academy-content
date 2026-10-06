@@ -1,32 +1,5 @@
 # trankyl-academy-content
 
-Site web (SvelteKit) de Trankyl Academy — taxonomie et curriculum under CC-BY-4.0 license, site code under MIT.
-
-Ce site sert deux publics :
-
-- **Public / apprenants** : parcourir les metiers, s'inscrire a un module, passer le quiz de fin de module,
-  suivre sa progression et ses certifications (`/`, `/metiers/[code]`, `/modules/[id]`, `/login`, `/register`,
-  `/dashboard`), lire le blog (`/blog`), en savoir plus (`/a-propos`, `/contact`)
-- **Admins** : gerer la taxonomie (metiers/niveaux/competences) et le curriculum (modules/quiz) — tout se fait
-  ici, cote site, pas de saisie directe en base (`/admin/taxonomy`, `/admin/curriculum`)
-
-Le contenu du blog et de la FAQ est statique (`src/lib/content/`), independant du backend — pas de gestion
-d'articles cote admin pour l'instant.
-
-Toutes les donnees viennent de l'API `trankyl-academy-engine` (FastAPI). Ce site n'a pas sa propre base de
-donnees.
-
-## Prerequis
-
-- Node.js 20+
-- `trankyl-academy-engine` lance en local (ou son URL de prod) pour l'API
-
-## Installation
-
-```bash
-npm install
-cp .env.example .env   # PUBLIC_API_URL doit pointer vers l'API FastAPI
-```
 
 ## Developpement
 

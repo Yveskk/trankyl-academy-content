@@ -18,6 +18,17 @@
   let password = $state("");
   let loading = $state(false);
 
+  // Deja connecte en tant qu'apprenant : pas besoin de repasser par
+  // l'inscription (mot de passe, etc.), on l'envoie directement dans son
+  // espace. Un client connecte n'a PAS de compte apprenant (tables
+  // separees) : le formulaire reste normalement accessible pour lui.
+  $effect(() => {
+    if (auth.role === "apprenant") {
+      snackbar.success("Vous avez déjà un compte apprenant — voici votre espace.");
+      goto("/dashboard");
+    }
+  });
+
   async function handleSubmit(event: SubmitEvent) {
     event.preventDefault();
     loading = true;
@@ -42,7 +53,7 @@
 
 <div class="auth-split">
   <div class="auth-brand-panel">
-    <img class="auth-brand-logo" src="/logo.svg" alt="Trankyl" />
+    <!-- <img class="auth-brand-logo" src="/academiLogo.png" alt="Trankyl" /> -->
     <div class="auth-brand-body">
       <h2 class="auth-brand-title">{i18n.dict.register.brandTitle}</h2>
       <p class="auth-brand-text">{i18n.dict.register.brandText}</p>

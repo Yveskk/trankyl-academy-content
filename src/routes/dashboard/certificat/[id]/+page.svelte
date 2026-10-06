@@ -61,7 +61,7 @@
 
           <!-- Header -->
           <div class="cert-header">
-            <img class="cert-logo-img" src="/logo.svg" alt="Trankyl" />
+            <img class="cert-logo-img" src="/academiLogo.png" alt="Trankyl" />
             <div class="cert-divider">
               <span class="line"></span>
               <span class="diamond">◆</span>
@@ -157,7 +157,7 @@
     position: absolute;
     z-index: -1;
     inset: 0;
-    background: url("/logo.svg") center / 340px no-repeat;
+    background: url("/academiLogo.png") center / 340px no-repeat;
     opacity: 0.05;
     pointer-events: none;
   }

@@ -37,7 +37,7 @@
 
 <div class="auth-split">
   <div class="auth-brand-panel">
-    <img class="auth-brand-logo" src="/logo.svg" alt="Trankyl" />
+    <!-- <img class="auth-brand-logo" src="/academiLogo.png" alt="Trankyl" /> -->
     <div class="auth-brand-body">
       <h2 class="auth-brand-title">{i18n.dict.login.brandTitle}</h2>
       <p class="auth-brand-text">{i18n.dict.login.brandText}</p>

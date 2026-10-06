@@ -186,4 +186,20 @@ export const en: Dictionary = {
     statVilles: "City / region(s) covered",
     statGenre: "Breakdown among learners",
   },
+  prestataires: {
+    choiceTitle: "How would you like to proceed?",
+    choiceSubtitle:
+      "Browse the list of certified providers yourself, or describe what you need to SITA and let her guide you.",
+    choiceListTitle: "See the list of providers",
+    choiceListText: "Browse certified providers yourself, filtered by trade.",
+    choiceListCta: "See the list",
+    choiceChatTitle: "Chat with SITA",
+    choiceChatText: "Describe what you need, our AI assistant will guide you to the right provider.",
+    choiceChatCta: "Start the conversation",
+    back: "Back",
+    loginRequiredTitle: "Login required",
+    loginRequiredText: "Create an account or log in to chat with SITA and get matched with a certified provider.",
+    loginRequiredLogin: "Log in",
+    loginRequiredRegister: "Create an account",
+  },
 };

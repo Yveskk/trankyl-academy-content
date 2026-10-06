@@ -12,20 +12,27 @@
   } from "$lib/api/chat";
   import { auth } from "$lib/stores/auth.svelte";
   import { renderChatMarkdown } from "$lib/utils/chatMarkdown";
+  import { i18n } from "$lib/stores/locale.svelte";
   import Seo from "$lib/components/Seo.svelte";
-  import Bot from "@lucide/svelte/icons/bot";
   import User from "@lucide/svelte/icons/user";
   import Send from "@lucide/svelte/icons/send";
   import Plus from "@lucide/svelte/icons/plus";
   import Trash2 from "@lucide/svelte/icons/trash-2";
   import MessageSquare from "@lucide/svelte/icons/message-square";
-  import Sparkles from "@lucide/svelte/icons/sparkles";
   import Baby from "@lucide/svelte/icons/baby";
   import House from "@lucide/svelte/icons/house";
   import ChefHat from "@lucide/svelte/icons/chef-hat";
   import SprayCan from "@lucide/svelte/icons/spray-can";
   import Loader from "@lucide/svelte/icons/loader";
   import Users from "@lucide/svelte/icons/users";
+  import ArrowLeft from "@lucide/svelte/icons/arrow-left";
+  import ArrowRight from "@lucide/svelte/icons/arrow-right";
+  import LogIn from "@lucide/svelte/icons/log-in";
+
+  // Ecran affiche en arrivant sur /prestataires (depuis le menu) : on laisse
+  // la personne choisir entre parcourir la liste elle-meme ou discuter avec
+  // SITA, plutot que de l'emmener directement dans le chat.
+  let mode = $state<"choice" | "chat">("choice");
 
   let sessions = $state<ChatSession[]>([]);
   let currentSession = $state<ChatSessionDetail | null>(null);
@@ -41,11 +48,22 @@
     { icon: SprayCan, text: "Je cherche un agent d'entretien", color: "#fce7f3" },
   ];
 
-  const WELCOME = `👋 **Bienvenue ! Je suis SITA, l'assistant IA de Trankyl Academy.**
+  // Message d'accueil uniquement — une fois la conversation lancee, SITA
+  // adapte elle-meme sa langue a celle utilisee par le client (voir le
+  // prompt systeme cote backend), independamment de la langue du site.
+  let WELCOME = $derived(
+    i18n.locale === "en"
+      ? `👋 **Welcome! I'm SITA, Trankyl's AI assistant.**
+
+I'm here to help you find the right certified provider. Describe what you need and I'll connect you with the best professionals.
+
+**How can I help you?**`
+      : `👋 **Bienvenue ! Je suis SITA, l'assistante IA de Trankyl Academy.**
 
 Je suis là pour vous aider à trouver le bon prestataire certifié. Décrivez-moi votre besoin et je vous mettrai en relation avec les meilleurs professionnels.
 
-**Comment puis-je vous aider ?**`;
+**Comment puis-je vous aider ?**`
+  );
 
   onMount(async () => {
     if (auth.role === "client") {
@@ -149,120 +167,198 @@ Je suis là pour vous aider à trouver le bon prestataire certifié. Décrivez-m
   noindex
 />
 
-<div class="chat-layout" class:no-sidebar={auth.role !== "client"}>
-  <!-- Sidebar -->
-  {#if auth.role === "client"}
-    <aside class="chat-sidebar" class:collapsed={!showSidebar}>
-      <div class="sidebar-header">
-        <h2>Conversations</h2>
-        <button class="btn-new" onclick={startNewSession}>
-          <Plus size={16} /> Nouvelle
-        </button>
-      </div>
-      <div class="sessions-list">
-        {#each sessions as s}
-          <div
-            class="session-item"
-            class:active={currentSession?.id === s.id}
-            role="button"
-            tabindex="0"
-            onclick={() => selectSession(s.id)}
-            onkeydown={(e) => e.key === 'Enter' && selectSession(s.id)}
-          >
-            <MessageSquare size={15} class="session-icon" />
-            <span class="session-title">{s.title}</span>
-            <button class="btn-delete-sm" onclick={(e) => { e.stopPropagation(); handleDeleteSession(s.id, e); }} title="Supprimer">
-              <Trash2 size={12} />
-            </button>
-          </div>
-        {/each}
-        {#if sessions.length === 0}
-          <p class="empty-sessions">Aucune conversation.</p>
-        {/if}
-      </div>
-    </aside>
-  {/if}
-
-  <!-- Main Chat -->
-  <div class="chat-main">
-    <!-- Header -->
-    <div class="chat-header">
-      <button class="btn-toggle-sidebar" onclick={() => (showSidebar = !showSidebar)}>
-        <MessageSquare size={18} />
+{#if mode === "choice"}
+  <div class="choice-screen">
+    <img src="/sita.png" alt="SITA" class="choice-logo" />
+    <h1>{i18n.dict.prestataires.choiceTitle}</h1>
+    <p>{i18n.dict.prestataires.choiceSubtitle}</p>
+    <div class="choice-cards">
+      <a class="choice-card" href="/prestataires/liste">
+        <span class="choice-icon list"><Users size={26} /></span>
+        <h2>{i18n.dict.prestataires.choiceListTitle}</h2>
+        <p>{i18n.dict.prestataires.choiceListText}</p>
+        <span class="choice-cta">{i18n.dict.prestataires.choiceListCta} <ArrowRight size={14} /></span>
+      </a>
+      <button type="button" class="choice-card" onclick={() => (mode = "chat")}>
+        <span class="choice-icon ai"><img src="/sita.png" alt="SITA" /></span>
+        <h2>{i18n.dict.prestataires.choiceChatTitle}</h2>
+        <p>{i18n.dict.prestataires.choiceChatText}</p>
+        <span class="choice-cta">{i18n.dict.prestataires.choiceChatCta} <ArrowRight size={14} /></span>
       </button>
-      <div class="header-info">
-        <Sparkles size={18} class="sparkle" />
-        <div>
-          <h1>SITA</h1>
-          <p>Assistant IA Trankyl </p>
+    </div>
+  </div>
+{:else}
+  <div class="chat-layout" class:no-sidebar={auth.role !== "client"}>
+    <!-- Sidebar -->
+    {#if auth.role === "client"}
+      <aside class="chat-sidebar" class:collapsed={!showSidebar}>
+        <div class="sidebar-header">
+          <h2>Conversations</h2>
+          <button class="btn-new" onclick={startNewSession}>
+            <Plus size={16} /> Nouvelle
+          </button>
+        </div>
+        <div class="sessions-list">
+          {#each sessions as s}
+            <div
+              class="session-item"
+              class:active={currentSession?.id === s.id}
+              role="button"
+              tabindex="0"
+              onclick={() => selectSession(s.id)}
+              onkeydown={(e) => e.key === 'Enter' && selectSession(s.id)}
+            >
+              <MessageSquare size={15} class="session-icon" />
+              <span class="session-title">{s.title}</span>
+              <button class="btn-delete-sm" onclick={(e) => { e.stopPropagation(); handleDeleteSession(s.id, e); }} title="Supprimer">
+                <Trash2 size={12} />
+              </button>
+            </div>
+          {/each}
+          {#if sessions.length === 0}
+            <p class="empty-sessions">Aucune conversation.</p>
+          {/if}
+        </div>
+      </aside>
+    {/if}
+
+    <!-- Main Chat -->
+    <div class="chat-main">
+      <!-- Header -->
+      <div class="chat-header">
+        <button class="btn-back" onclick={() => (mode = "choice")} aria-label={i18n.dict.prestataires.back}>
+          <ArrowLeft size={18} />
+        </button>
+        <div class="header-info">
+          <img src="/sita.png" alt="SITA" class="sparkle" />
+          <div>
+            <h1>SITA</h1>
+          </div>
         </div>
       </div>
-      <a class="browse-link" href="/prestataires/liste"><Users size={16} /> Voir la liste des prestataires</a>
-    </div>
 
-    <!-- Messages -->
-    <div class="chat-container" bind:this={chatContainer}>
-      {#if messages.length === 0}
-        <!-- Welcome + Suggestions -->
-        <div class="welcome-state">
-          <div class="welcome-icon"><Sparkles size={32} /></div>
-          <h2>Comment puis-je vous aider ?</h2>
-          <p>Décrivez votre besoin et je trouverai le bon prestataire pour vous.</p>
-          <div class="suggestions-grid">
-            {#each suggestions as s}
-              {@const Icon = s.icon}
-              <button class="suggestion-card" style="background: {s.color}" onclick={() => handleSend(s.text)}>
-                <Icon size={20} />
-                <span>{s.text}</span>
-              </button>
-            {/each}
+      {#if auth.role !== "client"}
+        <!-- Connexion requise avant de pouvoir discuter avec SITA -->
+        <div class="login-required">
+          <img src="/sita.png" alt="SITA" class="login-required-logo" />
+          <h2>{i18n.dict.prestataires.loginRequiredTitle}</h2>
+          <p>{i18n.dict.prestataires.loginRequiredText}</p>
+          <div class="login-required-actions">
+            <a class="btn btn-primary" href="/client/login"><LogIn size={16} /> {i18n.dict.prestataires.loginRequiredLogin}</a>
+            <a class="btn btn-outline" href="/client/register">{i18n.dict.prestataires.loginRequiredRegister}</a>
           </div>
         </div>
       {:else}
-        <div class="messages-wrapper">
-          {#each messages as msg}
-            <div class="message" class:user={msg.role === "user"} class:assistant={msg.role === "assistant"}>
-              <div class="msg-avatar">
-                {#if msg.role === "assistant"}<Bot size={16} />{:else}<User size={16} />{/if}
-              </div>
-              <div class="msg-bubble">
-                {@html renderChatMarkdown(msg.content)}
+        <!-- Messages -->
+        <div class="chat-container" bind:this={chatContainer}>
+          {#if messages.length === 0}
+            <!-- Welcome + Suggestions -->
+            <div class="welcome-state">
+              <div class="welcome-icon"><img src="/sita.png" alt="SITA" /></div>
+              <h2>Comment puis-je vous aider ?</h2>
+              <p>Décrivez votre besoin et je trouverai le bon prestataire pour vous.</p>
+              <div class="suggestions-grid">
+                {#each suggestions as s}
+                  {@const Icon = s.icon}
+                  <button class="suggestion-card" style="background: {s.color}" onclick={() => handleSend(s.text)}>
+                    <Icon size={20} />
+                    <span>{s.text}</span>
+                  </button>
+                {/each}
               </div>
             </div>
-          {/each}
+          {:else}
+            <div class="messages-wrapper">
+              {#each messages as msg}
+                <div class="message" class:user={msg.role === "user"} class:assistant={msg.role === "assistant"}>
+                  <div class="msg-avatar">
+                    {#if msg.role === "assistant"}<img src="/sita.png" alt="SITA" />{:else}<User size={16} />{/if}
+                  </div>
+                  <div class="msg-bubble">
+                    {@html renderChatMarkdown(msg.content)}
+                  </div>
+                </div>
+              {/each}
 
-          {#if loading}
-            <div class="message assistant">
-              <div class="msg-avatar"><Bot size={16} /></div>
-              <div class="msg-bubble typing">
-                <span class="dot"></span><span class="dot"></span><span class="dot"></span>
-              </div>
+              {#if loading}
+                <div class="message assistant">
+                  <div class="msg-avatar"><img src="/sita.png" alt="SITA" /></div>
+                  <div class="msg-bubble typing">
+                    <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+                  </div>
+                </div>
+              {/if}
             </div>
           {/if}
         </div>
+
+        <!-- Input -->
+        <div class="chat-input-bar">
+          <div class="input-row">
+            <textarea
+              placeholder="Décrivez votre besoin..."
+              bind:value={input}
+              onkeydown={handleKeydown}
+              rows="1"
+              disabled={loading}
+            ></textarea>
+            <button class="send-btn" onclick={() => handleSend()} disabled={!input.trim() || loading}>
+              {#if loading}<Loader size={18} class="spin" />{:else}<Send size={18} />{/if}
+            </button>
+          </div>
+          <p class="input-hint">Entrée pour envoyer · Boutons cliquables dans les réponses</p>
+        </div>
       {/if}
     </div>
-
-    <!-- Input -->
-    <div class="chat-input-bar">
-      <div class="input-row">
-        <textarea
-          placeholder="Décrivez votre besoin..."
-          bind:value={input}
-          onkeydown={handleKeydown}
-          rows="1"
-          disabled={loading}
-        ></textarea>
-        <button class="send-btn" onclick={() => handleSend()} disabled={!input.trim() || loading}>
-          {#if loading}<Loader size={18} class="spin" />{:else}<Send size={18} />{/if}
-        </button>
-      </div>
-      <p class="input-hint">Entrée pour envoyer · Boutons cliquables dans les réponses</p>
-    </div>
   </div>
-</div>
+{/if}
 
 <style>
+  /* Choice screen */
+  .choice-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; min-height: 100%; padding: 3rem 1.25rem; }
+  .choice-logo { width: 72px; height: 72px; object-fit: contain; margin-bottom: 1rem; }
+  .choice-screen h1 { font-size: clamp(1.4rem, 2.5vw, 1.9rem); font-weight: 800; color: #123b22; margin: 0 0 0.5rem; }
+  .choice-screen > p { color: #6b7c70; font-size: 0.95rem; max-width: 480px; margin: 0 0 2rem; }
+  .choice-cards { display: grid; grid-template-columns: repeat(2, minmax(240px, 1fr)); gap: 1.25rem; max-width: 720px; width: 100%; }
+  .choice-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    gap: 0.4rem;
+    padding: 1.5rem;
+    border: 1px solid rgba(10, 60, 30, .1);
+    border-radius: 16px;
+    background: #fff;
+    font-family: inherit;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: 0 4px 16px rgba(10, 50, 20, .04);
+    transition: all 0.15s;
+  }
+  .choice-card:hover { border-color: #03a71a; box-shadow: 0 8px 22px rgba(3, 167, 26, 0.12); transform: translateY(-2px); text-decoration: none; }
+  .choice-icon { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 14px; margin-bottom: 0.4rem; }
+  .choice-icon.list { background: #eaf7ed; color: #087b22; }
+  .choice-icon.ai { background: #eef7ff; }
+  .choice-icon.ai img { width: 32px; height: 32px; object-fit: contain; }
+  .choice-card h2 { font-size: 1.02rem; font-weight: 800; color: #123b22; margin: 0; }
+  .choice-card > p { font-size: 0.85rem; color: #6b7c70; margin: 0; }
+  .choice-cta { display: inline-flex; align-items: center; gap: 0.3rem; margin-top: 0.5rem; font-size: 0.82rem; font-weight: 700; color: #087b22; }
+
+  /* Login required (chat) */
+  .login-required { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2rem 1.25rem; }
+  .login-required-logo { width: 64px; height: 64px; object-fit: contain; margin-bottom: 1rem; }
+  .login-required h2 { font-size: 1.3rem; font-weight: 800; color: #123b22; margin: 0 0 0.5rem; }
+  .login-required p { color: #6b7c70; font-size: 0.9rem; max-width: 420px; margin: 0 0 1.5rem; }
+  .login-required-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center; }
+  .login-required-actions .btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.65rem 1.25rem; border-radius: 10px; font-weight: 700; font-size: 0.88rem; text-decoration: none; }
+  .login-required-actions .btn-primary { background: linear-gradient(135deg, #04330d, #03a71a); color: #fff; }
+  .login-required-actions .btn-outline { border: 1.5px solid #b7dec1; color: #087b22; }
+
+  .btn-back { border: none; background: none; color: #6b7280; cursor: pointer; padding: 0.4rem; border-radius: 8px; display: flex; }
+  .btn-back:hover { background: #f3f4f6; }
+
   .chat-layout { display: grid; grid-template-columns: 320px minmax(0, 1fr); height: 100%; width: 100%; background: #f6f8f7; overflow: hidden; }
   .chat-layout.no-sidebar { grid-template-columns: minmax(0, 1fr); }
 
@@ -291,28 +387,7 @@ Je suis là pour vous aider à trouver le bon prestataire certifié. Décrivez-m
   .btn-toggle-sidebar { border: none; background: none; color: #6b7280; cursor: pointer; padding: 0.4rem; border-radius: 8px; }
   .btn-toggle-sidebar:hover { background: #f3f4f6; }
   .header-info { display: flex; align-items: center; gap: 0.6rem; flex: 1; }
-  .browse-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    flex-shrink: 0;
-    padding: 0.55rem 1.1rem;
-    border-radius: 999px;
-    background: linear-gradient(135deg, #04330d, #03a71a);
-    color: #fff;
-    font-size: 0.82rem;
-    font-weight: 700;
-    text-decoration: none;
-    white-space: nowrap;
-    box-shadow: 0 4px 14px rgba(3, 167, 26, 0.28);
-    transition: transform 0.15s, box-shadow 0.15s;
-  }
-  .browse-link:hover {
-    text-decoration: none;
-    transform: translateY(-1px);
-    box-shadow: 0 6px 18px rgba(3, 167, 26, 0.35);
-  }
-  .header-info :global(.sparkle) { color: #d97706; }
+  .header-info :global(.sparkle) { width: 38px; height: 38px; object-fit: contain; flex-shrink: 0; }
   .header-info h1 { font-size: 1rem; font-weight: 800; margin: 0; color: #123b22; }
   .header-info p { font-size: 0.75rem; color: #6b7c70; margin: 0.15rem 0 0; }
   .header-info::after { content: "En ligne"; display: inline-flex; align-items: center; margin-left: 1rem; padding: .25rem .55rem; border-radius: 999px; background: #eaf7ed; color: #087b22; font-size: .68rem; font-weight: 700; }
@@ -323,15 +398,16 @@ Je suis là pour vous aider à trouver le bon prestataire certifié. Décrivez-m
 
   /* Welcome */
   .welcome-state { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100%; text-align: center; max-width: 720px; margin: 0 auto; }
-  .welcome-icon { width: 72px; height: 72px; border-radius: 22px; background: linear-gradient(135deg, #04330d, #03a71a); color: #fec600; display: flex; align-items: center; justify-content: center; margin-bottom: 1.25rem; box-shadow: 0 12px 24px rgba(3, 167, 26, .18); }
+  .welcome-icon { display: flex; align-items: center; justify-content: center; margin-bottom: 1.25rem; }
+  .welcome-icon img { width: 84px; height: 84px; object-fit: contain; }
   .welcome-state h2 { font-size: clamp(1.5rem, 2.5vw, 2rem); font-weight: 800; color: #123b22; margin: 0 0 0.45rem; }
   .welcome-state > p { color: #6b7c70; font-size: 0.95rem; margin-bottom: 1.75rem; }
 
   /* Messages */
   .message { display: flex; gap: 0.5rem; max-width: 75%; }
   .message.user { align-self: flex-end; flex-direction: row-reverse; }
-  .msg-avatar { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .message.assistant .msg-avatar { background: linear-gradient(135deg, #04330d, #03a71a); color: #fec600; }
+  .msg-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .msg-avatar img { width: 32px; height: 32px; object-fit: contain; }
   .message.user .msg-avatar { background: #e5e7eb; color: #374151; }
   .msg-bubble { padding: 0.75rem 0.9rem; border-radius: 12px; font-size: 0.88rem; line-height: 1.6; color: #111827; }
   .message.assistant .msg-bubble { background: #fff; border: 1px solid #e5e7eb; border-bottom-left-radius: 4px; }
@@ -400,5 +476,6 @@ Je suis là pour vous aider à trouver le bon prestataire certifié. Décrivez-m
     .suggestions-grid { grid-template-columns: 1fr; }
     .header-info::after { display: none; }
     .message { max-width: 95%; }
+    .choice-cards { grid-template-columns: 1fr; }
   }
 </style>

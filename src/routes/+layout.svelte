@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { onMount, untrack } from "svelte";
   import Shield from "@lucide/svelte/icons/shield";
   import ExternalLink from "@lucide/svelte/icons/external-link";
   import Menu from "@lucide/svelte/icons/menu";
@@ -69,10 +69,21 @@
   });
 
   $effect(() => {
+    // untrack() : appeler me()/meClient() declenche apiLoading.start() (qui
+    // lit ET ecrit apiLoading.activeRequests) de facon synchrone pendant
+    // l'execution de cet effet. Sans untrack, Svelte traite cette
+    // lecture/ecriture comme une dependance de l'effet lui-meme, qui se
+    // redeclenche alors a l'infini (effect_update_depth_exceeded) des la
+    // connexion/inscription — la navigation qui suit (goto) ne se produit
+    // alors jamais, laissant l'utilisateur bloque sur la page.
     if (auth.role === "apprenant" && !auth.profile) {
-      me().then((p) => auth.setProfile({ firstname: p.firstname, lastname: p.lastname })).catch(() => {});
+      untrack(() => {
+        me().then((p) => auth.setProfile({ firstname: p.firstname, lastname: p.lastname })).catch(() => {});
+      });
     } else if (auth.role === "client" && !auth.profile) {
-      meClient().then((p) => auth.setProfile({ firstname: p.firstname, lastname: p.lastname })).catch(() => {});
+      untrack(() => {
+        meClient().then((p) => auth.setProfile({ firstname: p.firstname, lastname: p.lastname })).catch(() => {});
+      });
     }
   });
 
@@ -111,7 +122,7 @@
     "@type": "EducationalOrganization",
     name: "Trankyl Academy",
     url: "https://academy.trankyl.com",
-    logo: "https://academy.trankyl.com/logo.svg",
+    logo: "https://academy.trankyl.com/academiLogo.png",
     description:
       "Trankyl Academy forme et certifie les métiers du service à domicile via une taxonomie de compétences et un curriculum de micro-modules évalués.",
     sameAs: [
@@ -175,7 +186,7 @@
       </button> -->
     {:else}
       <a class="brand" href="https://trankyl.com/">
-        <img class="brand-logo" src="/logo.svg" alt="Trankyl Academy" />
+        <img class="brand-logo" src="/academiLogo.png" alt="Trankyl Academy" />
       </a>
       <nav>
         <a href="https://trankyl.com/">{i18n.dict.nav.accueil}</a>

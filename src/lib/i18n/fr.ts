@@ -190,6 +190,23 @@ export const fr = {
     statVilles: "Ville(s) / région(s) couverte(s)",
     statGenre: "Répartition parmi les apprenants",
   },
+  prestataires: {
+    choiceTitle: "Comment souhaitez-vous procéder ?",
+    choiceSubtitle:
+      "Parcourez la liste des prestataires certifiés vous-même, ou décrivez votre besoin à SITA pour qu'elle vous oriente.",
+    choiceListTitle: "Voir la liste des prestataires",
+    choiceListText: "Parcourez vous-même les prestataires certifiés, filtrés par métier.",
+    choiceListCta: "Voir la liste",
+    choiceChatTitle: "Discuter avec SITA",
+    choiceChatText: "Décrivez votre besoin, notre assistante IA vous oriente vers le bon prestataire.",
+    choiceChatCta: "Démarrer la discussion",
+    back: "Retour",
+    loginRequiredTitle: "Connexion requise",
+    loginRequiredText:
+      "Créez un compte ou connectez-vous pour discuter avec SITA et être mis en relation avec un prestataire certifié.",
+    loginRequiredLogin: "Se connecter",
+    loginRequiredRegister: "Créer un compte",
+  },
 };
 
 export type Dictionary = typeof fr;

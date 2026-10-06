@@ -5,6 +5,7 @@
   import type { Metier, Prestataire } from "$lib/api/types";
   import { localize } from "$lib/i18n/localize";
   import Seo from "$lib/components/Seo.svelte";
+  import Loader from "$lib/components/Loader.svelte";
   import ArrowLeft from "@lucide/svelte/icons/arrow-left";
   import ArrowRight from "@lucide/svelte/icons/arrow-right";
   import Award from "@lucide/svelte/icons/award";
@@ -16,6 +17,20 @@
   let prestataires = $state<Prestataire[]>([]);
   let loading = $state(true);
   let expandedId = $state<number | null>(null);
+
+  // Masque temporairement le score de matching (et son detail) le temps de
+  // retravailler cet affichage — a remettre a true quand ce sera pret.
+  const SHOW_MATCH_SCORE = false;
+
+  // La recherche de prestataires (score de confiance + certifications) peut
+  // prendre quelques secondes : ces messages se relaient toutes les 3s pour
+  // que l'attente paraisse moins longue.
+  const patienceMessages = [
+    "Recherche des prestataires certifiés...",
+    "Vérification des scores de confiance...",
+    "Analyse des certifications...",
+    "Encore un instant...",
+  ];
 
   onMount(async () => {
     try {
@@ -87,7 +102,7 @@
   </div>
 
   {#if loading}
-    <div class="empty-state"><p>Chargement...</p></div>
+    <Loader size={40} messages={patienceMessages} />
   {:else if prestataires.length === 0}
     <div class="empty-state"><p>Aucun prestataire vérifié et certifié ne correspond pour le moment.</p></div>
   {:else}
@@ -110,7 +125,7 @@
           </div>
 
           <div class="scores">
-            {#if p.match_score !== null}
+            {#if SHOW_MATCH_SCORE && p.match_score !== null}
               <button class="score-badge main-score" style="color:{scoreColor(p.match_score)}" onclick={() => (expandedId = expandedId === p.id ? null : p.id)}>
                 <Gauge size={14} />
                 {p.match_score}/100
@@ -122,7 +137,7 @@
             {/if}
           </div>
 
-          {#if expandedId === p.id && p.match_breakdown}
+          {#if SHOW_MATCH_SCORE && expandedId === p.id && p.match_breakdown}
             <div class="breakdown">
               {#each Object.values(p.match_breakdown) as item}
                 <div class="breakdown-row">

@@ -1,6 +1,5 @@
 <script lang="ts">
   import UserPlus from "@lucide/svelte/icons/user-plus";
-  import Sparkles from "@lucide/svelte/icons/sparkles";
   import ShieldCheck from "@lucide/svelte/icons/shield-check";
   import Clock from "@lucide/svelte/icons/clock";
   import { goto } from "$app/navigation";
@@ -16,6 +15,17 @@
   let phone = $state("");
   let password = $state("");
   let loading = $state(false);
+
+  // Deja connecte en tant que client : pas besoin de repasser par
+  // l'inscription, on l'envoie directement retrouver SITA. Un apprenant
+  // connecte n'a PAS de compte client (tables separees) : le formulaire
+  // reste normalement accessible pour lui.
+  $effect(() => {
+    if (auth.role === "client") {
+      snackbar.success("Vous avez déjà un compte client — voici votre espace.");
+      goto("/prestataires");
+    }
+  });
 
   async function handleSubmit(event: SubmitEvent) {
     event.preventDefault();
@@ -41,12 +51,12 @@
 
 <div class="auth-split">
   <div class="auth-brand-panel">
-    <img class="auth-brand-logo" src="/logo.svg" alt="Trankyl" />
+    <img class="auth-brand-logo" src="/academiLogo.png" alt="Trankyl" />
     <div class="auth-brand-body">
       <h2 class="auth-brand-title">Un besoin à la maison ?</h2>
       <p class="auth-brand-text">Créez votre compte pour discuter avec SITA et trouver rapidement un prestataire certifié.</p>
       <div class="auth-value-list">
-        <div class="auth-value-item"><span class="value-icon"><Sparkles size={17} /></span>Recommandations par SITA, notre assistant IA</div>
+        <div class="auth-value-item"><span class="value-icon value-icon--logo"><img src="/sita.png" alt="SITA" class="value-icon-logo" /></span>Recommandations par SITA, notre assistant IA</div>
         <div class="auth-value-item"><span class="value-icon"><ShieldCheck size={17} /></span>Uniquement des prestataires vérifiés</div>
         <div class="auth-value-item"><span class="value-icon"><Clock size={17} /></span>Une réponse en quelques minutes</div>
       </div>
@@ -88,6 +98,15 @@
 </div>
 
 <style>
+  .value-icon--logo {
+    background: none;
+  }
+  .value-icon-logo {
+    width: 34px;
+    height: 34px;
+    object-fit: contain;
+  }
+
   .name-row {
     display: grid;
     grid-template-columns: 1fr 1fr;

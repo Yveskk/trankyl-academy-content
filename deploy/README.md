@@ -39,7 +39,7 @@ coup avec une simple variable d'environnement au runtime du conteneur.
 ### 1. Build & push de l'image (en local)
 
 ```bash
-./deploy/deploy-service.sh 0.1.0 --push
+./deploy/deploy-service.sh 0.3.1 --push
 ```
 
 ### 2. DNS

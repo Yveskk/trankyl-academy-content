@@ -1,25 +1,71 @@
 <script lang="ts">
-  import MessageCircle from "@lucide/svelte/icons/message-circle";
   import X from "@lucide/svelte/icons/x";
   import Send from "@lucide/svelte/icons/send";
-  import Sparkles from "@lucide/svelte/icons/sparkles";
   import { orientationChat } from "$lib/api/orientation";
   import { renderChatMarkdown } from "$lib/utils/chatMarkdown";
+  import { i18n } from "$lib/stores/locale.svelte";
+  import { login } from "$lib/api/auth";
+  import { auth } from "$lib/stores/auth.svelte";
+  import PhoneField from "$lib/components/PhoneField.svelte";
 
   interface ChatMsg {
     role: "user" | "assistant";
     content: string;
   }
 
-  const WELCOME = `👋 Bonjour ! Je suis **SITA**, l'assistant IA de Trankyl.
+  // Sauvegarde locale de la conversation (par navigateur, jamais envoyee
+  // ailleurs) : la personne peut fermer le widget, recharger la page, elle
+  // retrouve sa conversation en cours plutot que de repartir de zero.
+  const STORAGE_KEY = "trankyl_orientation_chat";
 
-Décrivez-moi ce que vous aimez faire ou l'expérience que vous avez déjà, et je vous orienterai vers la formation qui vous correspond le mieux.`;
+  function loadStoredMessages(): ChatMsg[] {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function persistMessages(msgs: ChatMsg[]) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(msgs));
+    } catch {
+      // stockage indisponible (navigation privee, quota...) — pas bloquant
+    }
+  }
+
+  // Message d'accueil uniquement — une fois la conversation lancee, SITA
+  // adapte elle-meme sa langue a celle utilisee par la personne (voir le
+  // prompt systeme cote backend), independamment de la langue du site.
+  let WELCOME = $derived(
+    i18n.locale === "en"
+      ? `👋 Hi! I'm **SITA**, Trankyl's AI assistant.
+
+Tell me what you enjoy doing or the experience you already have, and I'll guide you to the training that suits you best.`
+      : `👋 Bonjour ! Je suis **SITA**, l'assistante IA de Trankyl.
+
+Décrivez-moi ce que vous aimez faire ou l'expérience que vous avez déjà, et je vous orienterai vers la formation qui vous correspond le mieux.`
+  );
 
   let open = $state(false);
   let messages = $state<ChatMsg[]>([]);
   let input = $state("");
   let loading = $state(false);
   let container: HTMLDivElement | undefined = $state();
+
+  // Porte de connexion affichee a la place du champ de saisie quand une
+  // action du chat (ex: "Passer le test") demande d'etre connecte en tant
+  // qu'apprenant avant de continuer.
+  let showLoginGate = $state(false);
+  let pendingAction = $state<string | null>(null);
+  let loginCountryCode = $state("228");
+  let loginPhone = $state("");
+  let loginPassword = $state("");
+  let loginLoading = $state(false);
+  let loginError = $state<string | null>(null);
 
   function scrollToBottom() {
     setTimeout(() => {
@@ -29,20 +75,18 @@ Décrivez-moi ce que vous aimez faire ou l'expérience que vous avez déjà, et 
 
   function toggle() {
     open = !open;
-    if (open) {
-      if (messages.length === 0) {
-        messages = [{ role: "assistant", content: WELCOME }];
-      }
-      scrollToBottom();
+    if (open && messages.length === 0) {
+      const stored = loadStoredMessages();
+      messages = stored.length > 0 ? stored : [{ role: "assistant", content: WELCOME }];
     }
+    if (open) scrollToBottom();
   }
 
-  async function handleSend() {
-    const msg = input.trim();
+  async function sendMessage(msg: string) {
     if (!msg || loading) return;
     const history = messages.map((m) => ({ role: m.role, content: m.content }));
     messages = [...messages, { role: "user", content: msg }];
-    input = "";
+    persistMessages(messages);
     loading = true;
     scrollToBottom();
     try {
@@ -51,8 +95,58 @@ Décrivez-moi ce que vous aimez faire ou l'expérience que vous avez déjà, et 
     } catch (e) {
       messages = [...messages, { role: "assistant", content: `❌ ${(e as Error).message}` }];
     } finally {
+      persistMessages(messages);
       loading = false;
       scrollToBottom();
+    }
+  }
+
+  async function handleSend() {
+    const msg = input.trim();
+    if (!msg) return;
+    input = "";
+    await sendMessage(msg);
+  }
+
+  const START_TEST_MESSAGE = "Je veux passer le test de positionnement.";
+
+  function handleChatAction(action: string) {
+    if (action !== "start-test") return;
+    if (auth.role === "apprenant") {
+      sendMessage(START_TEST_MESSAGE);
+    } else {
+      pendingAction = action;
+      loginError = null;
+      showLoginGate = true;
+    }
+  }
+
+  function handleMessagesClick(event: MouseEvent) {
+    const target = (event.target as HTMLElement).closest("[data-chat-action]") as HTMLElement | null;
+    if (!target) return;
+    event.preventDefault();
+    const action = target.dataset.chatAction;
+    if (action) handleChatAction(action);
+  }
+
+  async function handleGateLogin(event: SubmitEvent) {
+    event.preventDefault();
+    loginLoading = true;
+    loginError = null;
+    try {
+      const token = await login(`+${loginCountryCode}${loginPhone}`, loginPassword);
+      auth.login(token.access_token, "apprenant");
+      showLoginGate = false;
+      loginPassword = "";
+      const action = pendingAction;
+      pendingAction = null;
+      if (action === "start-test") {
+        await sendMessage(START_TEST_MESSAGE);
+      }
+    } catch (e) {
+      loginError = (e as Error).message;
+    } finally {
+      loginLoading = false;
     }
   }
 </script>
@@ -61,12 +155,14 @@ Décrivez-moi ce que vous aimez faire ou l'expérience que vous avez déjà, et 
   {#if open}
     <div class="orientation-panel">
       <div class="orientation-header">
-        <span class="orientation-header-title"><Sparkles size={15} /> SITA — Trouvez votre formation</span>
+        <span class="orientation-header-title"><img src="/sita.png" alt="SITA" class="orientation-logo" /> SITA — Trouvez votre formation</span>
         <button type="button" class="orientation-close" onclick={toggle} aria-label="Fermer">
           <X size={16} />
         </button>
       </div>
-      <div class="orientation-messages" bind:this={container}>
+      <!-- svelte-ignore a11y_no_static_element_interactions -->
+      <!-- svelte-ignore a11y_click_events_have_key_events -->
+      <div class="orientation-messages" bind:this={container} onclick={handleMessagesClick}>
         {#each messages as msg}
           <div class="orientation-msg" class:user={msg.role === "user"}>
             {@html renderChatMarkdown(msg.content)}
@@ -76,31 +172,50 @@ Décrivez-moi ce que vous aimez faire ou l'expérience que vous avez déjà, et 
           <div class="orientation-msg typing"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
         {/if}
       </div>
-      <form
-        class="orientation-input-row"
-        onsubmit={(e) => {
-          e.preventDefault();
-          handleSend();
-        }}
-      >
-        <input type="text" placeholder="Décrivez ce que vous aimez faire..." bind:value={input} />
-        <button type="submit" disabled={loading || !input.trim()} aria-label="Envoyer">
-          <Send size={16} />
-        </button>
-      </form>
+
+      {#if showLoginGate}
+        <form class="orientation-login-gate" onsubmit={handleGateLogin}>
+          <p class="orientation-gate-text">Connectez-vous pour passer le test et faire valider vos compétences.</p>
+          <PhoneField bind:countryCode={loginCountryCode} bind:phone={loginPhone} label="Téléphone" id="orientation-gate-phone" />
+          <div class="field">
+            <label for="orientation-gate-password">Mot de passe</label>
+            <input id="orientation-gate-password" type="password" bind:value={loginPassword} required />
+          </div>
+          {#if loginError}<p class="orientation-gate-error">{loginError}</p>{/if}
+          <div class="orientation-gate-actions">
+            <button type="submit" disabled={loginLoading}>{loginLoading ? "Connexion..." : "Se connecter"}</button>
+            <button type="button" class="orientation-gate-cancel" onclick={() => (showLoginGate = false)}>Annuler</button>
+          </div>
+          <a class="orientation-gate-register" href="/register">Pas encore de compte ? Inscrivez-vous</a>
+        </form>
+      {:else}
+        <form
+          class="orientation-input-row"
+          onsubmit={(e) => {
+            e.preventDefault();
+            handleSend();
+          }}
+        >
+          <input type="text" placeholder="Décrivez ce que vous aimez faire..." bind:value={input} />
+          <button type="submit" disabled={loading || !input.trim()} aria-label="Envoyer">
+            <Send size={16} />
+          </button>
+        </form>
+      {/if}
     </div>
   {/if}
 
   <button
     type="button"
     class="orientation-fab"
+    class:is-open={open}
     onclick={toggle}
     aria-label={open ? "Fermer l'assistant d'orientation" : "Ouvrir l'assistant d'orientation"}
   >
     {#if open}
       <X size={22} />
     {:else}
-      <MessageCircle size={22} />
+      <img src="/sita.png" alt="SITA" class="orientation-fab-logo" />
       <span class="orientation-fab-pulse" aria-hidden="true"></span>
     {/if}
   </button>
@@ -124,14 +239,21 @@ Décrivez-moi ce que vous aimez faire ou l'expérience que vous avez déjà, et 
     height: 58px;
     border-radius: 999px;
     border: none;
-    background: linear-gradient(135deg, var(--green-deep), var(--green));
+    background: none;
+    padding: 0;
     color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 8px 20px rgba(4, 51, 13, 0.28);
+    filter: drop-shadow(0 8px 16px rgba(4, 51, 13, 0.35));
     transition: transform 0.15s;
+  }
+
+  .orientation-fab.is-open {
+    background: linear-gradient(135deg, var(--green-deep), var(--green));
+    filter: none;
+    box-shadow: 0 8px 20px rgba(4, 51, 13, 0.28);
   }
 
   .orientation-fab:hover {
@@ -201,6 +323,17 @@ Décrivez-moi ce que vous aimez faire ou l'expérience que vous avez déjà, et 
     gap: 0.4rem;
     font-size: 0.85rem;
     font-weight: 700;
+  }
+  .orientation-logo {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+  .orientation-fab-logo {
+    width: 58px;
+    height: 58px;
+    object-fit: contain;
   }
 
   .orientation-close {
@@ -333,6 +466,66 @@ Décrivez-moi ce que vous aimez faire ou l'expérience que vous avez déjà, et 
   .orientation-input-row button:disabled {
     opacity: 0.45;
     cursor: not-allowed;
+  }
+
+  .orientation-login-gate {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem 0.75rem;
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .orientation-gate-text {
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+
+  .orientation-gate-error {
+    font-size: 0.78rem;
+    color: #b91c1c;
+    margin: 0;
+  }
+
+  .orientation-gate-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .orientation-gate-actions button[type="submit"] {
+    padding: 0.55rem 1rem;
+    border: none;
+    border-radius: 10px;
+    background: var(--green);
+    color: #fff;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+
+  .orientation-gate-actions button[type="submit"]:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .orientation-gate-cancel {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .orientation-gate-register {
+    font-size: 0.78rem;
+    color: var(--green-dark);
+    font-weight: 600;
+    text-align: center;
   }
 
   @media (max-width: 480px) {

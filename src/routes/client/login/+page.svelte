@@ -1,6 +1,5 @@
 <script lang="ts">
   import LogIn from "@lucide/svelte/icons/log-in";
-  import Sparkles from "@lucide/svelte/icons/sparkles";
   import ShieldCheck from "@lucide/svelte/icons/shield-check";
   import Clock from "@lucide/svelte/icons/clock";
   import { goto } from "$app/navigation";
@@ -36,12 +35,12 @@
 
 <div class="auth-split">
   <div class="auth-brand-panel">
-    <img class="auth-brand-logo" src="/logo.svg" alt="Trankyl" />
+    <!-- <img class="auth-brand-logo" src="/academiLogo.png" alt="Trankyl" /> -->
     <div class="auth-brand-body">
       <h2 class="auth-brand-title">Trouvez le bon prestataire.</h2>
       <p class="auth-brand-text">Connectez-vous pour discuter avec SITA et trouver un professionnel certifié pour vos besoins.</p>
       <div class="auth-value-list">
-        <div class="auth-value-item"><span class="value-icon"><Sparkles size={17} /></span>Recommandations par SITA, notre assistant IA</div>
+        <div class="auth-value-item"><span class="value-icon value-icon--logo"><img src="/sita.png" alt="SITA" class="value-icon-logo" /></span>Recommandations par SITA, notre assistant IA</div>
         <div class="auth-value-item"><span class="value-icon"><ShieldCheck size={17} /></span>Uniquement des prestataires vérifiés</div>
         <div class="auth-value-item"><span class="value-icon"><Clock size={17} /></span>Suivi de vos échanges et demandes</div>
       </div>
@@ -68,3 +67,14 @@
     <p class="form-footer muted"><a href="/mot-de-passe-oublie?role=client">Mot de passe oublié ?</a></p>
   </div>
 </div>
+
+<style>
+  .value-icon--logo {
+    background: none;
+  }
+  .value-icon-logo {
+    width: 34px;
+    height: 34px;
+    object-fit: contain;
+  }
+</style>

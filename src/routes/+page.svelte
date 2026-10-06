@@ -226,14 +226,14 @@
   </section>
   {/if}
 
-  <section class="cta-band">
+  <!-- <section class="cta-band">
     <h2>{i18n.dict.home.ctaTitle}</h2>
     <p>{i18n.dict.home.ctaText}</p>
     <div class="cta-actions">
       <a class="btn btn-gold btn-lg" href="/register">{i18n.dict.home.ctaSignup}</a>
       <a class="btn btn-outline-light btn-lg" href="/impact">{i18n.dict.home.ctaLearnMore}</a>
     </div>
-  </section>
+  </section> -->
 {/if}
 
 <OrientationWidget />
