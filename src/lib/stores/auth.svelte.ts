@@ -5,6 +5,7 @@ export type Role = "apprenant" | "admin" | "client";
 export interface Profile {
   firstname: string;
   lastname: string;
+  image?: string | null;
 }
 
 interface StoredSession {
@@ -26,7 +27,24 @@ function loadSession(): StoredSession | null {
   }
 }
 
+export interface AdminInfo {
+  id: number;
+  firstname: string;
+  lastname: string | null;
+  email: string;
+  role: { id: number; name: string } | null;
+  is_super: boolean;
+  permissions: string[];
+  mfa_enabled: boolean;
+  recovery_left: number;
+  all_countries: boolean;
+  countries: { code: string; name: string; name_en: string | null }[];
+  default_country: string | null;
+}
+
 class AuthStore {
+  /** Profil et droits de l'administrateur connecte (charges par /auth/admin/me). */
+  admin = $state<AdminInfo | null>(null);
   token = $state<string | null>(null);
   role = $state<Role | null>(null);
   profile = $state<Profile | null>(null);
@@ -56,10 +74,16 @@ class AuthStore {
     }
   }
 
+  /** Le super-administrateur a tout ; sinon la permission doit figurer dans son role. */
+  can(key: string): boolean {
+    return !!this.admin && (this.admin.is_super || this.admin.permissions.includes(key));
+  }
+
   logout() {
     this.token = null;
     this.role = null;
     this.profile = null;
+    this.admin = null;
     if (browser) {
       localStorage.removeItem(STORAGE_KEY);
     }

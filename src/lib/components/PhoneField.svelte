@@ -1,4 +1,7 @@
 <script lang="ts">
+  import { tick } from "svelte";
+  import ChevronDown from "@lucide/svelte/icons/chevron-down";
+  import Search from "@lucide/svelte/icons/search";
   // Indicatif du numero de telephone : n'importe quel pays est valide ici
   // (comme les vraies apps vendor/client Trankyl, qui utilisent un picker
   // pays complet). A ne pas confondre avec `countries.country_has_service`
@@ -195,6 +198,8 @@
   ];
 
   const COUNTRIES = RAW.map(([iso2, code, name]) => ({ iso2, code, name, flag: flagEmoji(iso2) }));
+  type Country = (typeof COUNTRIES)[number];
+  const norm = (v: string) => v.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
   let {
     countryCode = $bindable("228"),
@@ -202,41 +207,267 @@
     label,
     id = "phone",
     required = true,
+    invalid = false,
   }: {
     countryCode: string;
     phone: string;
     label: string;
     id?: string;
     required?: boolean;
+    invalid?: boolean;
   } = $props();
+
+  // Liste deroulante avec recherche (nom du pays, indicatif ou code ISO ; accents ignores), clavier complet.
+  let open = $state(false);
+  let query = $state("");
+  let active = $state(0);
+  let root = $state<HTMLDivElement | undefined>();
+  let searchEl = $state<HTMLInputElement | undefined>();
+  let listEl = $state<HTMLUListElement | undefined>();
+
+  // Plusieurs pays partagent un indicatif (ex. +1) : on retient le premier de la liste pour l'affichage.
+  const current = $derived(COUNTRIES.find((c) => c.code === countryCode) ?? COUNTRIES[0]);
+  const filtered = $derived.by(() => {
+    const q = norm(query).replace(/^\+/, "");
+    if (!q) return COUNTRIES;
+    return COUNTRIES.filter((c) => norm(c.name).includes(q) || c.code.startsWith(q) || c.iso2.toLowerCase() === q);
+  });
+  $effect(() => {
+    void query;
+    active = 0;
+  });
+
+  async function toggle() {
+    open = !open;
+    if (open) {
+      query = "";
+      active = Math.max(0, COUNTRIES.findIndex((c) => c.code === countryCode));
+      await tick();
+      searchEl?.focus();
+      listEl?.querySelector<HTMLElement>(".active")?.scrollIntoView({ block: "nearest" });
+    }
+  }
+  function close(refocus = true) {
+    open = false;
+    if (refocus) root?.querySelector<HTMLButtonElement>(".dial")?.focus();
+  }
+  function pick(c: Country) {
+    countryCode = c.code;
+    close();
+  }
+  function scrollToActive() {
+    tick().then(() => listEl?.querySelector<HTMLElement>(".active")?.scrollIntoView({ block: "nearest" }));
+  }
+  function onSearchKey(e: KeyboardEvent) {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      active = Math.min(filtered.length - 1, active + 1);
+      scrollToActive();
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      active = Math.max(0, active - 1);
+      scrollToActive();
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (filtered[active]) pick(filtered[active]);
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      close();
+    } else if (e.key === "Tab") {
+      close(false);
+    }
+  }
+  function onTriggerKey(e: KeyboardEvent) {
+    if (e.key === "ArrowDown" && !open) {
+      e.preventDefault();
+      toggle();
+    }
+  }
+  function onOutside(e: PointerEvent) {
+    if (open && root && !root.contains(e.target as Node)) close(false);
+  }
 </script>
 
 <div class="field">
   <label for={id}>{label}</label>
-  <div class="phone-field">
-    <select bind:value={countryCode} aria-label="Indicatif pays">
-      {#each COUNTRIES as c (c.iso2)}
-        <option value={c.code}>{c.flag} {c.name} +{c.code}</option>
-      {/each}
-    </select>
-    <input {id} type="tel" inputmode="numeric" autocomplete="tel-national" bind:value={phone} {required} />
+  <div class="phone-field" class:invalid class:open bind:this={root}>
+    <button type="button" class="dial" aria-haspopup="listbox" aria-expanded={open} aria-label="Indicatif pays : {current.name} +{current.code}" onclick={toggle} onkeydown={onTriggerKey}>
+      <span class="flag" aria-hidden="true">{current.flag}</span>
+      <span class="code">+{current.code}</span>
+      <ChevronDown size={15} />
+    </button>
+    <input {id} type="tel" inputmode="tel" autocomplete="tel-national" placeholder="90 00 00 00" bind:value={phone} {required} maxlength="20" aria-invalid={invalid || undefined} />
+
+    {#if open}
+      <div class="panel" role="presentation">
+        <div class="search">
+          <Search size={15} />
+          <input
+            bind:this={searchEl}
+            type="search"
+            placeholder="Rechercher un pays ou un indicatif"
+            aria-label="Rechercher un pays"
+            autocomplete="off"
+            bind:value={query}
+            onkeydown={onSearchKey}
+            role="combobox"
+            aria-expanded="true"
+            aria-controls="{id}-list"
+            aria-activedescendant={filtered[active] ? `${id}-opt-${filtered[active].iso2}` : undefined}
+          />
+        </div>
+        <ul id="{id}-list" role="listbox" aria-label="Pays" bind:this={listEl}>
+          {#each filtered as c, i (c.iso2)}
+            <!-- clavier : gere par le champ de recherche (pattern combobox) -->
+            <!-- svelte-ignore a11y_click_events_have_key_events -->
+            <li id="{id}-opt-{c.iso2}" role="option" aria-selected={c.code === countryCode && c.iso2 === current.iso2} class:active={i === active} onmousemove={() => (active = i)} onclick={() => pick(c)}>
+              <span class="flag" aria-hidden="true">{c.flag}</span>
+              <span class="nm">{c.name}</span>
+              <span class="dc">+{c.code}</span>
+            </li>
+          {:else}
+            <li class="none" role="presentation">Aucun pays ne correspond.</li>
+          {/each}
+        </ul>
+      </div>
+    {/if}
   </div>
 </div>
 
+<svelte:window onpointerdown={onOutside} />
+
 <style>
+  /* Un seul bloc : indicatif + numero partagent la meme bordure, le meme survol et le meme halo de focus. */
   .phone-field {
+    position: relative;
     display: flex;
-    gap: 0.5rem;
+    align-items: stretch;
+    border: 1.5px solid var(--field-border);
+    border-radius: 12px;
+    background: var(--field-bg);
+    transition: border-color 0.16s ease, box-shadow 0.16s ease;
   }
-
-  .phone-field select {
-    flex: 0 0 auto;
-    width: auto;
-    max-width: 9rem;
+  .phone-field:hover:not(:focus-within) {
+    border-color: var(--field-border-hover);
   }
-
-  .phone-field input {
+  .phone-field:focus-within {
+    border-color: var(--green);
+    box-shadow: 0 0 0 4px var(--field-ring);
+  }
+  .phone-field.invalid {
+    border-color: var(--danger);
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+  }
+  .dial {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0 0.8rem;
+    border: 0;
+    border-right: 1.5px solid var(--field-border);
+    border-radius: 11px 0 0 11px;
+    background: #f7f8f5;
+    font: inherit;
+    font-size: 0.97rem;
+    font-weight: 700;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .dial:hover {
+    background: #eef1ec;
+  }
+  .dial :global(svg) {
+    color: var(--muted);
+    transition: transform 0.18s;
+  }
+  .open .dial :global(svg) {
+    transform: rotate(180deg);
+  }
+  .flag {
+    font-size: 1.25rem;
+    line-height: 1;
+  }
+  .phone-field > input {
     flex: 1;
     min-width: 0;
+    border: 0;
+    border-radius: 0 11px 11px 0;
+    box-shadow: none !important;
+  }
+  .panel {
+    position: absolute;
+    z-index: 40;
+    top: calc(100% + 6px);
+    left: 0;
+    width: min(22rem, 100vw - 2rem);
+    background: #fff;
+    border: 1.5px solid var(--field-border);
+    border-radius: 14px;
+    box-shadow: 0 18px 44px rgba(15, 23, 32, 0.2);
+    overflow: hidden;
+    animation: pop 0.14s ease-out;
+  }
+  .search {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0 0.8rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--muted);
+  }
+  .search input {
+    flex: 1;
+    min-width: 0;
+    border: 0 !important;
+    box-shadow: none !important;
+    background: transparent;
+    padding-left: 0;
+    min-height: 44px;
+  }
+  ul {
+    max-height: 16rem;
+    overflow-y: auto;
+    margin: 0;
+    padding: 0.3rem;
+    list-style: none;
+  }
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0.65rem;
+    border-radius: 9px;
+    cursor: pointer;
+    font-size: 0.93rem;
+  }
+  li.active {
+    background: var(--green-soft);
+  }
+  li[aria-selected="true"] .nm {
+    font-weight: 800;
+  }
+  .nm {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .dc {
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  li.none {
+    justify-content: center;
+    color: var(--muted);
+    cursor: default;
+  }
+  @keyframes pop {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
   }
 </style>

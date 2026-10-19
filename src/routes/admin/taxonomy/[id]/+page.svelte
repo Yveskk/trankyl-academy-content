@@ -1,4 +1,6 @@
 <script lang="ts">
+  import DatePicker from "$lib/components/datetime/DatePicker.svelte";
+  import { confirmDialog } from "$lib/stores/confirm.svelte";
   import { page } from "$app/stores";
   import {
     adminGetMetier,
@@ -110,7 +112,7 @@
   }
 
   async function handleDeleteNiveau(id: number) {
-    if (!confirm("Supprimer ce niveau et ses compétences ?")) return;
+    if (!(await confirmDialog.ask({ title: "Supprimer ce niveau ?", message: "Ses compétences seront supprimées avec lui.", confirmLabel: "Supprimer", tone: "danger" }))) return;
     try {
       await deleteNiveau(id);
       snackbar.success("Niveau supprimé.");
@@ -144,7 +146,7 @@
   }
 
   async function handleDeleteCompetence(id: number) {
-    if (!confirm("Supprimer cette compétence ?")) return;
+    if (!(await confirmDialog.ask({ title: "Supprimer cette compétence ?", confirmLabel: "Supprimer", tone: "danger" }))) return;
     try {
       await deleteCompetence(id);
       snackbar.success("Compétence supprimée.");
@@ -198,7 +200,7 @@
             </div>
             <div class="field">
               <label for="new-niveau-date">Date de début</label>
-              <input id="new-niveau-date" type="date" bind:value={newNiveau.date_debut} />
+              <DatePicker id="new-niveau-date" bind:value={newNiveau.date_debut} clearable />
             </div>
           </div>
           <div class="form-grid-4">
@@ -278,7 +280,7 @@
                         </div>
                         <div class="field">
                           <label for="edit-niveau-date-{niveau.id}">Date de début</label>
-                          <input id="edit-niveau-date-{niveau.id}" type="date" bind:value={editNiveauForm.date_debut} />
+                          <DatePicker id="edit-niveau-date-{niveau.id}" bind:value={editNiveauForm.date_debut} clearable />
                         </div>
                       </div>
                       <div class="form-grid-4">

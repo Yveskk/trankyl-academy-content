@@ -1,54 +1,66 @@
 <script lang="ts">
-  import LogIn from "@lucide/svelte/icons/log-in";
+  import AuthShell from "$lib/components/AuthShell.svelte";
   import ShieldCheck from "@lucide/svelte/icons/shield-check";
   import Clock from "@lucide/svelte/icons/clock";
   import { goto } from "$app/navigation";
-  import { loginClient } from "$lib/api/auth";
-  import { auth } from "$lib/stores/auth.svelte";
-  import { snackbar } from "$lib/stores/snackbar.svelte";
+  import PasswordInput from "$lib/components/PasswordInput.svelte";
+  import { page } from "$app/stores";
+  import { safeRedirect } from "$lib/utils/redirect";
   import PhoneField from "$lib/components/PhoneField.svelte";
+  import { loginVerify, loginClient, type AuthResult } from "$lib/api/auth";
+  import Btn from "$lib/components/Btn.svelte";
+  import VerifyPanel from "$lib/components/VerifyPanel.svelte";
+  import { auth } from "$lib/stores/auth.svelte";
+  import { i18n } from "$lib/stores/locale.svelte";
+  import { snackbar } from "$lib/stores/snackbar.svelte";
+  import { setDeviceToken } from "$lib/utils/device";
+  import { VerificationFlow } from "$lib/utils/verificationFlow.svelte";
 
   let countryCode = $state("228");
   let phone = $state("");
   let password = $state("");
   let loading = $state(false);
 
+  async function finish(res: AuthResult) {
+    if (!res.access_token) return;
+    setDeviceToken("client", res.device_token);
+    auth.login(res.access_token, "client");
+    snackbar.success("Connexion réussie.");
+    await goto(safeRedirect($page.url.searchParams.get("redirect")));
+  }
+
+  const flow = new VerificationFlow<AuthResult>({ verify: loginVerify, onSuccess: finish });
+
   async function handleSubmit(event: SubmitEvent) {
     event.preventDefault();
     loading = true;
     try {
-      const token = await loginClient(`+${countryCode}${phone}`, password);
-      auth.login(token.access_token, "client");
-      snackbar.success("Connexion réussie.");
-      await goto("/prestataires");
+      const res = await loginClient(`+${countryCode}${phone}`, password, { lang: i18n.locale });
+      if (!flow.begin(res)) await finish(res);
     } catch (e) {
-      snackbar.error((e as Error).message);
+      const message = flow.fail(e);
+      if (!flow.challenge) snackbar.error(message);
     } finally {
       loading = false;
     }
   }
+
+  const values = [
+    { img: "/sita.png", text: "Recommandations par SITA, notre assistant IA" },
+    { icon: ShieldCheck, text: "Uniquement des prestataires vérifiés" },
+    { icon: Clock, text: "Suivi de vos échanges et demandes" },
+  ];
 </script>
 
 <svelte:head>
   <meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
-<div class="auth-split">
-  <div class="auth-brand-panel">
-    <!-- <img class="auth-brand-logo" src="/academiLogo.png" alt="Trankyl" /> -->
-    <div class="auth-brand-body">
-      <h2 class="auth-brand-title">Trouvez le bon prestataire.</h2>
-      <p class="auth-brand-text">Connectez-vous pour discuter avec SITA et trouver un professionnel certifié pour vos besoins.</p>
-      <div class="auth-value-list">
-        <div class="auth-value-item"><span class="value-icon value-icon--logo"><img src="/sita.png" alt="SITA" class="value-icon-logo" /></span>Recommandations par SITA, notre assistant IA</div>
-        <div class="auth-value-item"><span class="value-icon"><ShieldCheck size={17} /></span>Uniquement des prestataires vérifiés</div>
-        <div class="auth-value-item"><span class="value-icon"><Clock size={17} /></span>Suivi de vos échanges et demandes</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="auth-form-panel">
-    <span class="icon-badge"><LogIn size={22} /></span>
+<AuthShell title="Trouvez le bon prestataire." text="Connectez-vous pour discuter avec SITA et trouver un professionnel certifié pour vos besoins." {values}>
+    
+    {#if flow.challenge}
+      <VerifyPanel {flow} trustOption context="Trankyl Academy · Vérification de sécurité" backLabel="Modifier mes informations" onback={() => flow.reset()} />
+    {:else}
     <h1>Connexion</h1>
     <p class="muted">Accédez à votre espace pour trouver un prestataire.</p>
 
@@ -56,25 +68,12 @@
       <PhoneField bind:countryCode bind:phone label="Téléphone" />
       <div class="field">
         <label for="password">Mot de passe</label>
-        <input id="password" type="password" bind:value={password} required />
+        <PasswordInput bind:value={password} id="password" autocomplete="current-password" />
       </div>
-      <button class="btn btn-gold" type="submit" disabled={loading}>
-        {loading ? "Connexion..." : "Se connecter"}
-      </button>
+      <Btn type="submit" class="btn-gold" {loading}>{loading ? "Connexion..." : "Se connecter"}</Btn>
     </form>
 
     <p class="form-footer muted">Pas encore de compte ? <a href="/client/register">Inscrivez-vous</a></p>
     <p class="form-footer muted"><a href="/mot-de-passe-oublie?role=client">Mot de passe oublié ?</a></p>
-  </div>
-</div>
-
-<style>
-  .value-icon--logo {
-    background: none;
-  }
-  .value-icon-logo {
-    width: 34px;
-    height: 34px;
-    object-fit: contain;
-  }
-</style>
+    {/if}
+</AuthShell>

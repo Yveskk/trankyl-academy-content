@@ -6,20 +6,29 @@
   import X from "@lucide/svelte/icons/x";
   import Bell from "@lucide/svelte/icons/bell";
   import ChevronDown from "@lucide/svelte/icons/chevron-down";
-  import { goto } from "$app/navigation";
+  import { afterNavigate, goto, invalidateAll } from "$app/navigation";
   import { navigating, page } from "$app/stores";
   import { me, meClient } from "$lib/api/auth";
   import Footer from "$lib/components/Footer.svelte";
-  import LanguageSwitcher from "$lib/components/LanguageSwitcher.svelte";
+  import BackLink from "$lib/components/BackLink.svelte";
+  import ConfirmModal from "$lib/components/ConfirmModal.svelte";
   import Snackbar from "$lib/components/Snackbar.svelte";
+  import TopStrip from "$lib/components/TopStrip.svelte";
+  import OrientationWidget from "$lib/components/OrientationWidget.svelte";
   import { auth } from "$lib/stores/auth.svelte";
+  import { navHistory } from "$lib/stores/history.svelte";
+  import { backFallback } from "$lib/utils/backTarget";
   import { i18n } from "$lib/stores/locale.svelte";
+  import { site } from "$lib/stores/site.svelte";
   import { apiLoading } from "$lib/stores/loading.svelte";
   import { notifications } from "$lib/stores/notifications.svelte";
+  import { providerSpace } from "$lib/stores/providerSpace.svelte";
   import "../app.css";
 
   let { children } = $props();
   let isAdminPanel = $derived($page.url.pathname.startsWith("/admin") && $page.url.pathname !== "/admin/login");
+  // Espace prestataire (profil, enrôlement, tableau de bord) : application pleine largeur ; l'en-tête du site reste visible, sans pied de page.
+  let isProviderSpace = $derived($page.url.pathname === "/prestataire" || $page.url.pathname.startsWith("/prestataire/"));
   // Uniquement les interfaces de chat plein ecran elles-memes (pas leurs
   // sous-pages comme /prestataires/[id] ou /prestataires/liste, qui sont
   // des pages normales avec defilement).
@@ -28,7 +37,22 @@
       $page.url.pathname === "/prestataires" ||
       $page.url.pathname === "/client/messagerie"
   );
-  let hideFooter = $derived(isAdminPanel || isChatPage);
+  // Pages d'authentification : plein ecran, sans pied de page (voir AuthShell).
+  const AUTH_PATHS = ["/login", "/register", "/client/login", "/client/register", "/mot-de-passe-oublie", "/admin/login"];
+  let isAuthPage = $derived(AUTH_PATHS.includes($page.url.pathname.replace(/\/+$/, "")));
+  // Pages publiques "maquette" pleine largeur (bandeau de couverture, sections colorees).
+  // Espace client (Mon compte, Mes réservations) : menu latéral + contenu sur toute la largeur.
+  let isClientSpace = $derived($page.url.pathname.startsWith("/client/compte") || $page.url.pathname.startsWith("/client/reservations"));
+  let isFullBleed = $derived(
+    isAuthPage || $page.url.pathname === "/devenir-prestataire" || $page.url.pathname === "/accueil" || $page.url.pathname === "/categories" || $page.url.pathname === "/recherche" || $page.url.pathname.startsWith("/profil/") || isClientSpace
+  );
+  // Tableau de bord « Trankyl PRO » (compte prestataire complet) : application autonome, sans l'en-tête du site.
+  let hideSiteHeader = $derived(isProviderSpace && providerSpace.unlocked);
+  let hideFooter = $derived(isAdminPanel || isProviderSpace || isChatPage || isAuthPage);
+
+  // Lien "Retour" sur chaque page publique (sauf l'accueil et les ecrans de chat plein ecran).
+  afterNavigate(({ type }) => navHistory.record(type));
+  let backTarget = $derived(isAdminPanel || isProviderSpace || isChatPage ? null : backFallback($page.url.pathname));
 
   let topbarEl: HTMLElement | undefined = $state();
   let mobileMenuOpen = $state(false);
@@ -37,6 +61,7 @@
 
   let showNotifPrompt = $derived(
     !notifPromptDismissed &&
+      !hideSiteHeader &&
       (auth.role === "apprenant" || auth.role === "client") &&
       notifications.permission === "default"
   );
@@ -68,6 +93,18 @@
     if ($navigating) userMenuOpen = false;
   });
 
+  // Le visiteur change de pays ou de langue (bande verte) : toutes les donnees de la page sont rechargees pour ce pays / cette langue.
+  let scopeKey = `${site.country}|${i18n.locale}`;
+  $effect(() => {
+    const key = `${site.country}|${i18n.locale}`;
+    untrack(() => {
+      if (key !== scopeKey) {
+        scopeKey = key;
+        invalidateAll();
+      }
+    });
+  });
+
   $effect(() => {
     // untrack() : appeler me()/meClient() declenche apiLoading.start() (qui
     // lit ET ecrit apiLoading.activeRequests) de facon synchrone pendant
@@ -82,7 +119,7 @@
       });
     } else if (auth.role === "client" && !auth.profile) {
       untrack(() => {
-        meClient().then((p) => auth.setProfile({ firstname: p.firstname, lastname: p.lastname })).catch(() => {});
+        meClient().then((p) => auth.setProfile({ firstname: p.firstname, lastname: p.lastname, image: p.image })).catch(() => {});
       });
     }
   });
@@ -138,7 +175,13 @@
 </svelte:head>
 
 {#snippet userMenu()}
-  {#if auth.profile}
+  {#if auth.profile && auth.role === "client"}
+    <!-- Le client va directement sur « Mon compte » (profil, sécurité, fermeture). -->
+    <a class="user-chip" class:active={isActive("/client/compte")} href="/client/compte" aria-label="Mon compte">
+      <span class="user-avatar">{#if auth.profile.image}<img src={auth.profile.image} alt="" />{:else}{initials(auth.profile)}{/if}</span>
+      <span class="user-name">{auth.profile.firstname}</span>
+    </a>
+  {:else if auth.profile}
     <div class="user-menu-wrap">
       <button
         class="user-chip"
@@ -165,7 +208,11 @@
   <div class="nav-progress" aria-hidden="true"></div>
 {/if}
 
-<header class="topbar" class:admin-header={isAdminPanel} bind:this={topbarEl}>
+{#if !isAdminPanel && !isChatPage && !hideSiteHeader}
+  <TopStrip />
+{/if}
+
+<header class="topbar" class:admin-header={isAdminPanel} class:ps-hidden={hideSiteHeader} bind:this={topbarEl}>
   <div class="topbar-inner">
     {#if isAdminPanel}
       <!-- <a class="brand admin-brand" href="/admin/dashboard">
@@ -189,23 +236,25 @@
         <img class="brand-logo" src="/academiLogo.png" alt="Trankyl Academy" />
       </a>
       <nav>
-        <a href="https://trankyl.com/">{i18n.dict.nav.accueil}</a>
+        <a href="/accueil" class:active={isActive("/accueil")}>{i18n.dict.nav.accueil}</a>
         <a href="/" class:active={isActive("/", true)}>{i18n.dict.nav.metiers}</a>
-        <a href="/prestataires" class:active={isActive("/prestataires")}>{i18n.dict.nav.prestataires}</a>
         <a href="/blog" class:active={isActive("/blog")}>{i18n.dict.nav.blog}</a>
         <span class="nav-divider"></span>
         {#if auth.role === "apprenant"}
-          <a href="/dashboard" class:active={isActive("/dashboard")}>{i18n.dict.nav.monEspace}</a>
-          <a href="/messagerie" class="msg-link" class:active={isActive("/messagerie")}>{i18n.dict.nav.messagerie}{#if notifications.count > 0}<span class="notif-badge">{notifications.count}</span>{/if}</a>
+          <!-- Espace prestataire : « Mon espace » et « Messagerie » (parcours apprenant) n'ont pas lieu d'être ici. -->
+          {#if !isProviderSpace}
+            <a href="/apprenant" class:active={isActive("/apprenant")}>{i18n.dict.nav.monEspace}</a>
+            <a href="/messagerie" class="msg-link" class:active={isActive("/messagerie")}>{i18n.dict.nav.messagerie}{#if notifications.count > 0}<span class="notif-badge">{notifications.count}</span>{/if}</a>
+          {/if}
           {@render userMenu()}
         {:else if auth.role === "client"}
+          <a href="/client/reservations" class="msg-link" class:active={isActive("/client/reservations")}>Mes réservations</a>
           <a href="/client/messagerie" class="msg-link" class:active={isActive("/client/messagerie")}>Mes demandes{#if notifications.count > 0}<span class="notif-badge">{notifications.count}</span>{/if}</a>
           {@render userMenu()}
         {:else}
-          <a href="/login" class:active={isActive("/login")}>{i18n.dict.nav.connexion}</a>
-          <a class="btn btn-primary btn-sm" href="/register">{i18n.dict.nav.inscription}</a>
+          <a class="nav-pill-outline" href="/client/login">{i18n.dict.nav.connexion}</a>
+          <a class="btn btn-sm nav-pill-dark" href="/devenir-prestataire">{i18n.dict.nav.inscription}</a>
         {/if}
-        <LanguageSwitcher />
       </nav>
       <button class="mobile-menu-button" type="button" aria-label={mobileMenuOpen ? i18n.dict.nav.fermerMenu : i18n.dict.nav.ouvrirMenu} aria-expanded={mobileMenuOpen} onclick={() => (mobileMenuOpen = !mobileMenuOpen)}>
         {#if mobileMenuOpen}<X size={22} />{:else}<Menu size={22} />{/if}
@@ -224,14 +273,12 @@
       <a href="/admin/curriculum" class:active={isActive("/admin/curriculum")} onclick={closeMobileMenu}>Curriculum</a>
       <a href="/admin/apprenants" class:active={isActive("/admin/apprenants")} onclick={closeMobileMenu}>Apprenants</a>
       <a href="/admin/blog" class:active={isActive("/admin/blog")} onclick={closeMobileMenu}>Blog</a>
-      <a href="/admin/banniere" class:active={isActive("/admin/banniere")} onclick={closeMobileMenu}>Bannière</a>
       <a href="/admin/contenu" class:active={isActive("/admin/contenu")} onclick={closeMobileMenu}>Contenu du site</a>
       <a href="/" class:active={isActive("/", true)} onclick={closeMobileMenu}><ExternalLink size={16} /> Voir le site public</a>
       <button type="button" onclick={logout}>Deconnexion</button>
     {:else}
-      <a href="https://trankyl.com/" onclick={closeMobileMenu}>{i18n.dict.nav.accueil}</a>
+      <a href="/accueil" class:active={isActive("/accueil")} onclick={closeMobileMenu}>{i18n.dict.nav.accueil}</a>
       <a href="/" class:active={isActive("/", true)} onclick={closeMobileMenu}>{i18n.dict.nav.metiers}</a>
-      <a href="/prestataires" class:active={isActive("/prestataires")} onclick={closeMobileMenu}>{i18n.dict.nav.prestataires}</a>
       <a href="/blog" class:active={isActive("/blog")} onclick={closeMobileMenu}>{i18n.dict.nav.blog}</a>
       {#if auth.role === "apprenant"}
         {#if auth.profile}
@@ -244,27 +291,23 @@
             <button type="button" class="mobile-logout-btn" onclick={logout}>{i18n.dict.nav.deconnexion}</button>
           {/if}
         {/if}
-        <a href="/dashboard" class:active={isActive("/dashboard")} onclick={closeMobileMenu}>{i18n.dict.nav.monEspace}</a>
-        <a href="/messagerie" class:active={isActive("/messagerie")} onclick={closeMobileMenu}>{i18n.dict.nav.messagerie}{#if notifications.count > 0} ({notifications.count}){/if}</a>
+        {#if !isProviderSpace}
+          <a href="/apprenant" class:active={isActive("/apprenant")} onclick={closeMobileMenu}>{i18n.dict.nav.monEspace}</a>
+          <a href="/messagerie" class:active={isActive("/messagerie")} onclick={closeMobileMenu}>{i18n.dict.nav.messagerie}{#if notifications.count > 0} ({notifications.count}){/if}</a>
+        {/if}
       {:else if auth.role === "client"}
         {#if auth.profile}
-          <button type="button" class="mobile-user-chip" aria-expanded={userMenuOpen} onclick={toggleUserMenu}>
-            <span class="user-avatar">{initials(auth.profile)}</span>
+          <a class="mobile-user-chip" href="/client/compte" onclick={closeMobileMenu}>
+            <span class="user-avatar">{#if auth.profile.image}<img src={auth.profile.image} alt="" />{:else}{initials(auth.profile)}{/if}</span>
             <span class="user-name">{auth.profile.firstname} {auth.profile.lastname}</span>
-            <ChevronDown size={15} class="user-chip-chevron" />
-          </button>
-          {#if userMenuOpen}
-            <button type="button" class="mobile-logout-btn" onclick={logout}>{i18n.dict.nav.deconnexion}</button>
-          {/if}
+          </a>
         {/if}
+        <a href="/client/reservations" class:active={isActive("/client/reservations")} onclick={closeMobileMenu}>Mes réservations</a>
         <a href="/client/messagerie" class:active={isActive("/client/messagerie")} onclick={closeMobileMenu}>Mes demandes{#if notifications.count > 0} ({notifications.count}){/if}</a>
       {:else}
-        <a href="/login" class:active={isActive("/login")} onclick={closeMobileMenu}>{i18n.dict.nav.connexion}</a>
-        <a class="mobile-menu-cta" href="/register" onclick={closeMobileMenu}>{i18n.dict.nav.inscription}</a>
+        <a href="/client/login" class:active={isActive("/client/login")} onclick={closeMobileMenu}>{i18n.dict.nav.connexion}</a>
+        <a class="mobile-menu-cta nav-pill-dark" href="/devenir-prestataire" onclick={closeMobileMenu}>{i18n.dict.nav.inscription}</a>
       {/if}
-      <div class="mobile-menu-lang">
-        <LanguageSwitcher />
-      </div>
     {/if}
   </aside>
 {/if}
@@ -280,12 +323,20 @@
   </div>
 {/if}
 
-{#if isAdminPanel}
+{#if isAdminPanel || isProviderSpace}
   <div class="admin-root-content">
     {@render children()}
   </div>
 {:else}
-  <main class="public-main" class:app-page={isChatPage}>
+  {#if backTarget && !isAuthPage}
+    <div class="back-bar" class:wide={isFullBleed}>
+      <BackLink fallback={backTarget} />
+    </div>
+  {/if}
+  <main class="public-main" class:app-page={isChatPage} class:full-bleed={isFullBleed} class:auth-main={isAuthPage}>
+    {#if isAuthPage && backTarget}
+      <div class="auth-back"><BackLink fallback={backTarget} /></div>
+    {/if}
     {@render children()}
   </main>
 {/if}
@@ -294,4 +345,9 @@
   <Footer />
 {/if}
 
+{#if !isAdminPanel && !isProviderSpace && !isChatPage}
+  <OrientationWidget />
+{/if}
+
 <Snackbar />
+<ConfirmModal />

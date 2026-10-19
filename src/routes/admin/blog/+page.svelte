@@ -1,4 +1,6 @@
 <script lang="ts">
+  import DatePicker from "$lib/components/datetime/DatePicker.svelte";
+  import { confirmDialog } from "$lib/stores/confirm.svelte";
   import { onMount } from "svelte";
   import { adminGetArticle, adminListArticles, createArticle, deleteArticle, updateArticle, uploadCoverImage } from "$lib/api/blog";
   import type { BlogArticle } from "$lib/api/types";
@@ -158,7 +160,7 @@
   }
 
   async function handleDelete(id: number) {
-    if (!confirm("Supprimer cet article ? Il s'agit d'un evenement de la table partagee Trankyl, egalement visible du site principal.")) return;
+    if (!(await confirmDialog.ask({ title: "Supprimer cet article ?", message: "Il s'agit d'un événement de la table partagée Trankyl : il disparaîtra aussi du site principal.", confirmLabel: "Supprimer", tone: "danger" }))) return;
     try {
       await deleteArticle(id);
       snackbar.success("Article supprimé.");
@@ -201,11 +203,11 @@
         <div class="form-grid">
           <div class="field">
             <label for="new-start">Date de début</label>
-            <input id="new-start" type="date" bind:value={newForm.event_start_date} required />
+            <DatePicker id="new-start" bind:value={newForm.event_start_date} required />
           </div>
           <div class="field">
             <label for="new-end">Date de fin (optionnel)</label>
-            <input id="new-end" type="date" bind:value={newForm.event_end_date} />
+            <DatePicker id="new-end" bind:value={newForm.event_end_date} clearable />
           </div>
         </div>
         <div class="field">
@@ -319,11 +321,11 @@
                     <div class="form-grid">
                       <div class="field">
                         <label for="edit-start-{article.id}">Date de début</label>
-                        <input id="edit-start-{article.id}" type="date" bind:value={editForm.event_start_date} required />
+                        <DatePicker id="edit-start-{article.id}" bind:value={editForm.event_start_date} required />
                       </div>
                       <div class="field">
                         <label for="edit-end-{article.id}">Date de fin (optionnel)</label>
-                        <input id="edit-end-{article.id}" type="date" bind:value={editForm.event_end_date} />
+                        <DatePicker id="edit-end-{article.id}" bind:value={editForm.event_end_date} clearable />
                       </div>
                     </div>
                     <div class="field">

@@ -1,7 +1,7 @@
 import { PUBLIC_API_URL } from "$env/static/public";
 import { auth } from "$lib/stores/auth.svelte";
 import { apiLoading } from "$lib/stores/loading.svelte";
-import { ApiError, api } from "./client";
+import { ApiError, api, scopeHeaders } from "./client";
 import type { BlogArticle, BlogArticleDetail } from "./types";
 
 export interface BlogArticlePayload {
@@ -22,6 +22,7 @@ export async function uploadCoverImage(file: File): Promise<{ url: string }> {
 
     const headers = new Headers();
     if (auth.token) headers.set("Authorization", `Bearer ${auth.token}`);
+    for (const [k, v] of Object.entries(scopeHeaders())) headers.set(k, v);
 
     const res = await fetch(`${PUBLIC_API_URL}/blog/admin/upload-image`, {
       method: "POST",

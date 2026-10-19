@@ -15,7 +15,7 @@
 </script>
 
 <Seo
-  title="Blog"
+  title={i18n.dict.nav.blog}
   description="Conseils, actualités et ressources sur les métiers du service à domicile : garde d'enfants, aide à domicile, entretien, cuisine — par Trankyl Academy."
 />
 

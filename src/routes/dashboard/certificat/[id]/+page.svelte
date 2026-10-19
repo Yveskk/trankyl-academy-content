@@ -43,7 +43,7 @@
 </svelte:head>
 
 <div class="cert-page">
-  <a class="back-link" href="/dashboard"><ArrowLeft size={15} /> Retour au tableau de bord</a>
+  <a class="back-link" href="/apprenant"><ArrowLeft size={15} /> Retour au tableau de bord</a>
 
   {#if loading}
     <div class="loading">Chargement...</div>

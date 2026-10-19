@@ -1,47 +1,44 @@
 <script lang="ts">
-  import UserPlus from "@lucide/svelte/icons/user-plus";
-  import ShieldCheck from "@lucide/svelte/icons/shield-check";
-  import Clock from "@lucide/svelte/icons/clock";
+  import { untrack } from "svelte";
   import { goto } from "$app/navigation";
-  import { loginClient, registerClient } from "$lib/api/auth";
+  import { page } from "$app/stores";
+  import { safeRedirect } from "$lib/utils/redirect";
+  import Clock from "@lucide/svelte/icons/clock";
+  import ShieldCheck from "@lucide/svelte/icons/shield-check";
+  import type { AuthResult } from "$lib/api/auth";
+  import AuthShell from "$lib/components/AuthShell.svelte";
+  import SignupWizard from "$lib/components/SignupWizard.svelte";
   import { auth } from "$lib/stores/auth.svelte";
   import { snackbar } from "$lib/stores/snackbar.svelte";
-  import PhoneField from "$lib/components/PhoneField.svelte";
+  import { setDeviceToken } from "$lib/utils/device";
 
-  let firstname = $state("");
-  let lastname = $state("");
-  let email = $state("");
-  let countryCode = $state("228");
-  let phone = $state("");
-  let password = $state("");
-  let loading = $state(false);
+  const values = [
+    { img: "/sita.png", text: "Recommandations par SITA, notre assistant IA" },
+    { icon: ShieldCheck, text: "Uniquement des prestataires vérifiés" },
+    { icon: Clock, text: "Une réponse en quelques minutes" },
+  ];
+  let step = $state<"info" | "channel" | "code">("info");
+  // Retour automatique vers la page d'ou vient le client (reservation, devis...) : ?redirect=/profil/...
+  const redirectParam = $derived($page.url.searchParams.get("redirect"));
+  const loginHref = $derived(redirectParam ? `/client/login?redirect=${encodeURIComponent(redirectParam)}` : "/client/login");
 
-  // Deja connecte en tant que client : pas besoin de repasser par
-  // l'inscription, on l'envoie directement retrouver SITA. Un apprenant
-  // connecte n'a PAS de compte client (tables separees) : le formulaire
-  // reste normalement accessible pour lui.
+  let completed = false;
   $effect(() => {
-    if (auth.role === "client") {
-      snackbar.success("Vous avez déjà un compte client — voici votre espace.");
-      goto("/prestataires");
+    if (auth.role === "client" && !completed) {
+      untrack(() => {
+        snackbar.success("Vous avez déjà un compte — voici votre espace.");
+        goto(safeRedirect(redirectParam));
+      });
     }
   });
 
-  async function handleSubmit(event: SubmitEvent) {
-    event.preventDefault();
-    loading = true;
-    try {
-      const fullPhone = `+${countryCode}${phone}`;
-      await registerClient({ firstname, lastname, email, password, phone: fullPhone });
-      const token = await loginClient(fullPhone, password);
-      auth.login(token.access_token, "client");
-      snackbar.success("Inscription réussie.");
-      await goto("/prestataires");
-    } catch (e) {
-      snackbar.error((e as Error).message);
-    } finally {
-      loading = false;
-    }
+  async function finish(res: AuthResult) {
+    if (!res.access_token) return;
+    completed = true;
+    setDeviceToken("client", res.device_token);
+    auth.login(res.access_token, "client");
+    snackbar.success("Compte créé et vérifié. Bienvenue !");
+    await goto(safeRedirect(redirectParam));
   }
 </script>
 
@@ -49,73 +46,10 @@
   <meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
-<div class="auth-split">
-  <div class="auth-brand-panel">
-    <img class="auth-brand-logo" src="/academiLogo.png" alt="Trankyl" />
-    <div class="auth-brand-body">
-      <h2 class="auth-brand-title">Un besoin à la maison ?</h2>
-      <p class="auth-brand-text">Créez votre compte pour discuter avec SITA et trouver rapidement un prestataire certifié.</p>
-      <div class="auth-value-list">
-        <div class="auth-value-item"><span class="value-icon value-icon--logo"><img src="/sita.png" alt="SITA" class="value-icon-logo" /></span>Recommandations par SITA, notre assistant IA</div>
-        <div class="auth-value-item"><span class="value-icon"><ShieldCheck size={17} /></span>Uniquement des prestataires vérifiés</div>
-        <div class="auth-value-item"><span class="value-icon"><Clock size={17} /></span>Une réponse en quelques minutes</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="auth-form-panel">
-    <span class="icon-badge gold"><UserPlus size={22} /></span>
+<AuthShell title="Un besoin à la maison ?" text="Créez votre compte pour discuter avec SITA et trouver rapidement un prestataire certifié." {values}>
+  {#if step === "info"}
     <h1>Créer un compte</h1>
-    <p class="muted">Pour trouver un prestataire certifié Trankyl Academy.</p>
-
-    <form onsubmit={handleSubmit}>
-      <div class="name-row">
-        <div class="field">
-          <label for="firstname">Prénom</label>
-          <input id="firstname" bind:value={firstname} required />
-        </div>
-        <div class="field">
-          <label for="lastname">Nom</label>
-          <input id="lastname" bind:value={lastname} required />
-        </div>
-      </div>
-      <div class="field">
-        <label for="email">Email</label>
-        <input id="email" type="email" bind:value={email} required />
-      </div>
-      <PhoneField bind:countryCode bind:phone label="Téléphone" />
-      <div class="field">
-        <label for="password">Mot de passe</label>
-        <input id="password" type="password" bind:value={password} required />
-      </div>
-      <button class="btn btn-gold" type="submit" disabled={loading}>
-        {loading ? "Création..." : "Créer mon compte"}
-      </button>
-    </form>
-
-    <p class="form-footer muted">Déjà un compte ? <a href="/client/login">Connectez-vous</a></p>
-  </div>
-</div>
-
-<style>
-  .value-icon--logo {
-    background: none;
-  }
-  .value-icon-logo {
-    width: 34px;
-    height: 34px;
-    object-fit: contain;
-  }
-
-  .name-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-  }
-
-  @media (max-width: 480px) {
-    .name-row {
-      grid-template-columns: 1fr;
-    }
-  }
-</style>
+    <p class="muted">Pour trouver un prestataire de confiance sur Trankyl.</p>
+  {/if}
+  <SignupWizard profile="client" bind:step cta="Créer mon compte" haveAccount="Déjà un compte ?" signIn="Connectez-vous" {loginHref} onsuccess={finish} />
+</AuthShell>

@@ -131,6 +131,8 @@ export interface Apprenant {
   email: string;
   phone: string | null;
   created_at: string | null;
+  /** apprentice | provider (prestataire) | certified_provider */
+  academy_status?: string | null;
 }
 
 export interface TrustScore {
@@ -215,6 +217,8 @@ export interface Client {
   lastname: string;
   email: string;
   phone: string | null;
+  /** URL de la photo de profil (null = initiales). */
+  image: string | null;
   created_at: string;
 }
 
@@ -223,6 +227,8 @@ export interface ApprenantDetail extends Apprenant {
   enrollment_count: number;
   completed_count: number;
   is_verified: boolean;
+  /** apprentice | provider (prestataire sans certificat) | certified_provider */
+  academy_status?: "apprentice" | "provider" | "certified_provider" | null;
   trust_score: number | null;
 }
 
@@ -294,15 +300,6 @@ export interface BlogArticle {
 
 export interface BlogArticleDetail extends BlogArticle {
   content: string[];
-}
-
-export interface Banner {
-  id: number;
-  ordre: number;
-  image_url: string;
-  image_url_mobile: string | null;
-  is_active: boolean;
-  updated_at: string;
 }
 
 export interface Conversation {

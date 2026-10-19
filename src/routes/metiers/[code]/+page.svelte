@@ -43,7 +43,7 @@
 
   async function handleCardClick(niveau: MetierDetail["niveaux"][number]) {
     if (isEnrolled(niveau.id)) {
-      goto("/dashboard");
+      goto("/apprenant");
       return;
     }
     if (auth.role !== "apprenant") {
@@ -55,7 +55,7 @@
       const enrollment = await enrollNiveau(niveau.id);
       niveauEnrollments = [...niveauEnrollments, enrollment];
       snackbar.success(i18n.dict.metierDetail.inscriptionConfirmee(niveau.numero, niveau.nom));
-      goto("/dashboard");
+      goto("/apprenant");
     } catch (e) {
       snackbar.error((e as Error).message);
     } finally {

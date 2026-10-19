@@ -46,7 +46,7 @@
           <li><a href="/">{i18n.dict.footer.tousLesMetiers}</a></li>
           <li><a href="/register">{i18n.dict.footer.creerUnCompte}</a></li>
           <li><a href="/login">{i18n.dict.footer.connexion}</a></li>
-          <li><a href="/dashboard">{i18n.dict.footer.monEspace}</a></li>
+          <li><a href="/apprenant">{i18n.dict.footer.monEspace}</a></li>
         </ul>
       </div>
 

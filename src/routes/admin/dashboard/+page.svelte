@@ -6,6 +6,7 @@
   import { listApprenants } from "$lib/api/matching";
   import { adminListArticles } from "$lib/api/blog";
   import type { ApprenantDetail } from "$lib/api/types";
+  import OpsDashboard from "$lib/components/admin/OpsDashboard.svelte";
   import Layers from "@lucide/svelte/icons/layers";
   import BookOpen from "@lucide/svelte/icons/book-open";
   import Award from "@lucide/svelte/icons/award";
@@ -89,6 +90,9 @@
 </script>
 
 <div class="dashboard">
+  <OpsDashboard />
+
+  <h2 class="ac-title">Académie</h2>
   <!-- Stats Grid -->
   <div class="stats-grid">
     {#each stats as stat}
@@ -164,6 +168,7 @@
 </div>
 
 <style>
+  .ac-title { margin: 0.4rem 0 -0.2rem; font-size: 1.15rem; }
   .dashboard {
     display: flex;
     flex-direction: column;

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { confirmDialog } from "$lib/stores/confirm.svelte";
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
   import { adminListMetiers, createMetier, deleteMetier, updateMetier } from "$lib/api/taxonomy";
@@ -114,7 +115,7 @@
   }
 
   async function handleDeleteMetier(id: number) {
-    if (!confirm("Supprimer ce métier et toutes ses données ?")) return;
+    if (!(await confirmDialog.ask({ title: "Supprimer ce métier ?", message: "Ses niveaux, compétences et modules associés seront supprimés avec lui.", confirmLabel: "Supprimer", tone: "danger" }))) return;
     try {
       await deleteMetier(id);
       snackbar.success("Métier supprimé.");

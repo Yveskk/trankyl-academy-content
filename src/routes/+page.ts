@@ -1,8 +1,7 @@
-import { listBanners } from "$lib/api/banners";
 import { listArticles } from "$lib/api/blog";
 import { getSection } from "$lib/api/content";
 import { listMetiers } from "$lib/api/taxonomy";
-import type { Banner, BlogArticle, ContentSection, Metier } from "$lib/api/types";
+import type { BlogArticle, ContentSection, Metier } from "$lib/api/types";
 import type { PageLoad } from "./$types";
 
 export const load: PageLoad = async () => {
@@ -31,14 +30,5 @@ export const load: PageLoad = async () => {
     articles = [];
   }
 
-  // Bannieres d'accueil geree depuis l'admin : un slot (ordre 1/2/3) sans
-  // banniere active garde son image par defaut cote +page.svelte.
-  let banners: Banner[] = [];
-  try {
-    banners = await listBanners();
-  } catch {
-    banners = [];
-  }
-
-  return { metiers, apiError, section, articles, banners };
+  return { metiers, apiError, section, articles };
 };

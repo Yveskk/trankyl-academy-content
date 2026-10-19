@@ -4,7 +4,9 @@
   import { orientationChat } from "$lib/api/orientation";
   import { renderChatMarkdown } from "$lib/utils/chatMarkdown";
   import { i18n } from "$lib/stores/locale.svelte";
+  import { goto } from "$app/navigation";
   import { login } from "$lib/api/auth";
+  import { setDeviceToken } from "$lib/utils/device";
   import { auth } from "$lib/stores/auth.svelte";
   import PhoneField from "$lib/components/PhoneField.svelte";
 
@@ -134,8 +136,17 @@ Décrivez-moi ce que vous aimez faire ou l'expérience que vous avez déjà, et 
     loginLoading = true;
     loginError = null;
     try {
-      const token = await login(`+${loginCountryCode}${loginPhone}`, loginPassword);
-      auth.login(token.access_token, "apprenant");
+      const res = await login(`+${loginCountryCode}${loginPhone}`, loginPassword);
+      if (res.status !== "ok" || !res.access_token) {
+        // Appareil non reconnu : un code est exige. On passe par la page de connexion,
+        // qui gere la verification (WhatsApp / SMS / email) en toute securite.
+        showLoginGate = false;
+        loginPassword = "";
+        await goto("/login");
+        return;
+      }
+      setDeviceToken("apprenant", res.device_token);
+      auth.login(res.access_token, "apprenant");
       showLoginGate = false;
       loginPassword = "";
       const action = pendingAction;

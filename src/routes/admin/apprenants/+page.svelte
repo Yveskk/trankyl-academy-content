@@ -117,6 +117,7 @@
               </td>
               <td>
                 <div class="status-cell">
+                  {#if a.academy_status === "provider"}<span class="badge-muted">Prestataire (sans certificat)</span>{/if}
                   {#if a.is_verified}
                     <span class="badge-green"><ShieldCheck size={11} /> Vérifié{a.trust_score !== null ? ` (${a.trust_score}/100)` : ""}</span>
                   {:else}

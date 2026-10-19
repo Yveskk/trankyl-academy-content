@@ -1,6 +1,8 @@
 <script lang="ts">
+  import { confirmDialog } from "$lib/stores/confirm.svelte";
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
+  import { page } from "$app/state";
   import {
     createChatSession,
     listChatSessions,
@@ -32,7 +34,8 @@
   // Ecran affiche en arrivant sur /prestataires (depuis le menu) : on laisse
   // la personne choisir entre parcourir la liste elle-meme ou discuter avec
   // SITA, plutot que de l'emmener directement dans le chat.
-  let mode = $state<"choice" | "chat">("choice");
+  // /prestataires?mode=chat ouvre directement le chat (ex. mode Premium de la recherche).
+  let mode = $state<"choice" | "chat">(page.url.searchParams.get("mode") === "chat" ? "chat" : "choice");
 
   let sessions = $state<ChatSession[]>([]);
   let currentSession = $state<ChatSessionDetail | null>(null);
@@ -96,7 +99,7 @@ Je suis là pour vous aider à trouver le bon prestataire certifié. Décrivez-m
 
   async function handleDeleteSession(id: number, e: Event) {
     e.stopPropagation();
-    if (!confirm("Supprimer cette conversation ?")) return;
+    if (!(await confirmDialog.ask({ title: "Supprimer cette conversation ?", message: "Les messages échangés avec SITA seront définitivement supprimés.", confirmLabel: "Supprimer", tone: "danger" }))) return;
     try {
       await deleteChatSession(id);
       sessions = sessions.filter((s) => s.id !== id);

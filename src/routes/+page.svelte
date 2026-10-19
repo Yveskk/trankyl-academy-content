@@ -14,7 +14,6 @@
   import type { Component } from "svelte";
   import { localize } from "$lib/i18n/localize";
   import Seo from "$lib/components/Seo.svelte";
-  import OrientationWidget from "$lib/components/OrientationWidget.svelte";
   import { i18n } from "$lib/stores/locale.svelte";
   import type { PageData } from "./$types";
 
@@ -23,8 +22,7 @@
   let query = $state("");
   let activeSlide = $state(0);
 
-  // Image par defaut de chaque slide (ordre 1/2/3) : utilisee tant que
-  // l'admin n'a pas uploade de banniere active pour ce slot.
+  // Image de chaque slide (ordre 1/2/3).
   const defaultSlideImages: Record<number, { image: string; imageMobile: string | null; alt: string }> = {
     1: {
       image: "https://images.unsplash.com/photo-1504159506876-f8338247a14a?auto=format&fit=crop&w=1200&q=85",
@@ -43,12 +41,7 @@
     },
   };
 
-  function slideImage(ordre: number): { image: string; imageMobile: string | null; alt: string } {
-    const banner = data.banners.find((b) => b.ordre === ordre);
-    return banner
-      ? { image: banner.image_url, imageMobile: banner.image_url_mobile, alt: defaultSlideImages[ordre].alt }
-      : defaultSlideImages[ordre];
-  }
+  const slideImage = (ordre: number) => defaultSlideImages[ordre];
 
   let slides = $derived([
     {
@@ -236,4 +229,3 @@
   </section> -->
 {/if}
 
-<OrientationWidget />
